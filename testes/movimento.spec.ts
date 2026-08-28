@@ -7,10 +7,27 @@ import { test, expect, type Page } from "@playwright/test";
    de um corte: haver estados intermédios. Daí as medições a meio da transição,
    em vez de só no princípio e no fim. */
 
-const ASSENTAR = 1400; // primeira carga: loader mínimo mais a entrada da página
-
 const visibilidadeDoLoader = (p: Page) =>
   p.locator("[data-carregamento]").evaluate((e) => getComputedStyle(e).visibility);
+
+/**
+ * Espera que o loader saia do caminho.
+ *
+ * Havia aqui uma espera fixa de 1400 ms — o mínimo do loader mais a entrada da
+ * página. Chega com o servidor quente, onde o emblema se levanta aos 1250 ms,
+ * mas não no primeiro pedido a um `next start` acabado de arrancar, onde a
+ * hidratação demora o dobro. E enquanto o loader está de pé cobre o ecrã e come
+ * os cliques, o que fazia falhar testes que nem sequer são sobre ele: o deslize
+ * das âncoras dava um salto porque o clique nunca chegava à ligação.
+ *
+ * Esperar pelo estado em vez de pelo relógio mede o site e não a máquina.
+ */
+const esperarSite = async (p: Page) => {
+  await expect.poll(() => visibilidadeDoLoader(p), {
+    timeout: 15_000,
+    message: "o loader não saiu do caminho"
+  }).toBe("hidden");
+};
 
 test.describe("loader entre páginas", () => {
   test("cobre a primeira carga e sai do caminho", async ({ page }) => {
@@ -18,26 +35,26 @@ test.describe("loader entre páginas", () => {
     await page.waitForTimeout(250);
     expect(await visibilidadeDoLoader(page)).toBe("visible");
 
-    await page.waitForTimeout(ASSENTAR);
+    await esperarSite(page);
     expect(await visibilidadeDoLoader(page)).toBe("hidden");
   });
 
   test("levanta-se ao mudar de página", async ({ page }) => {
     await page.goto("/");
-    await page.waitForTimeout(ASSENTAR);
+    await esperarSite(page);
 
     await page.getByRole("link", { name: "Marcar vez" }).first().click();
     await page.waitForTimeout(300);
     expect(await visibilidadeDoLoader(page)).toBe("visible");
 
     await expect(page).toHaveURL(/\/marcar/);
-    await page.waitForTimeout(ASSENTAR);
+    await esperarSite(page);
     expect(await visibilidadeDoLoader(page)).toBe("hidden");
   });
 
   test("não se levanta para um salto dentro da mesma página", async ({ page }) => {
     await page.goto("/");
-    await page.waitForTimeout(ASSENTAR);
+    await esperarSite(page);
 
     // O botão do hero, e não o do cabeçalho: em telemóvel esse está escondido
     // dentro do menu. De caminho cobre o `href` relativo, sem caminho nenhum.
@@ -56,20 +73,29 @@ test.describe("âncoras", () => {
   test("deslizam em vez de saltar", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/");
-    await page.waitForTimeout(ASSENTAR);
+    await esperarSite(page);
     expect(await page.evaluate(() => scrollY)).toBe(0);
 
+    /* Amostrar em vez de espreitar num instante fixo. Um salto dá duas
+       posições — zero e o destino; um deslize dá muitas pelo meio. Espreitar
+       aos 120 ms dizia isso no Chromium mas não no WebKit, cujo deslize é
+       bem mais curto: aos 120 ms já ia a 50 px do fim e o teste falhava por
+       causa do motor, não por causa do site. */
+    const amostragem = page.evaluate(() => new Promise<number[]>((resolve) => {
+      const vistas: number[] = [];
+      const t = setInterval(() => vistas.push(Math.round(scrollY)), 16);
+      setTimeout(() => { clearInterval(t); resolve(vistas); }, 700);
+    }));
+
     await page.locator("header").getByRole("link", { name: "Serviços", exact: true }).click();
+    const vistas = await amostragem;
 
-    // A meio já andou mas ainda não chegou — é isto que um salto não faz
-    await page.waitForTimeout(120);
-    const aMeio = await page.evaluate(() => scrollY);
-
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(1200);
     const fim = await page.evaluate(() => scrollY);
 
-    expect(aMeio).toBeGreaterThan(0);
-    expect(aMeio).toBeLessThan(fim - 50);
+    const peloMeio = [...new Set(vistas.filter((y) => y > 0 && y < fim - 5))];
+    expect(peloMeio.length, `só ${peloMeio.length} posições intermédias: parece um salto`)
+      .toBeGreaterThanOrEqual(2);
 
     expect(page.url()).toContain("#servicos");
     // O `scroll-margin-top` do tema tira o título de debaixo do cabeçalho fixo
@@ -80,7 +106,7 @@ test.describe("âncoras", () => {
   test("no telemóvel o menu fecha no mesmo clique", async ({ page }) => {
     await page.setViewportSize({ width: 393, height: 852 });
     await page.goto("/");
-    await page.waitForTimeout(ASSENTAR);
+    await esperarSite(page);
 
     await page.getByRole("button", { name: "Abrir menu" }).click();
     const menu = page.getByRole("dialog");
@@ -101,15 +127,36 @@ test.describe("painéis da carta", () => {
   test("fecham por etapas, não de um golpe", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/");
-    await page.waitForTimeout(ASSENTAR);
+    await esperarSite(page);
     await page.locator("#servicos").scrollIntoViewIfNeeded();
     await page.waitForTimeout(900);
 
-    const painel = page.locator("#servicos .MuiCollapse-root").first();
-    const aberto = (await painel.boundingBox())!.height;
-    expect(aberto).toBeGreaterThan(500); // o grupo Barbearia tem 18 serviços
+    /* O grupo mais longo da carta, e não o primeiro: este teste mede o fecho de
+       um painel alto, e o primeiro grupo tem só os dois packs. */
+    const grupo = page.locator("#servicos .MuiAccordion-root")
+      .filter({ hasText: "Extras & Cuidados" });
+    const cabecalho = grupo.locator(".MuiAccordionSummary-root");
+    const painel = grupo.locator(".MuiCollapse-root").first();
 
-    await page.locator("#servicos .MuiAccordionSummary-root").first().click();
+    await cabecalho.click();
+    await expect(cabecalho).toHaveAttribute("aria-expanded", "true");
+
+    /* Esperar que a altura *assente*, e não apenas que passe de 500: parar na
+       primeira leitura acima do limiar apanhava o painel ainda a abrir, e o
+       fecho seguinte partia de meia altura — o que fazia este teste medir uma
+       animação que nunca chegou a existir. Duas leituras iguais seguidas é o
+       sinal de que a abertura acabou. */
+    let anterior = -1;
+    await expect.poll(async () => {
+      const h = Math.round((await painel.boundingBox())!.height);
+      const assentou = h === anterior && h > 500;
+      anterior = h;
+      return assentou;
+    }, { intervals: [150, 150, 150, 200, 200, 300], message: "o painel não assentou" }).toBe(true);
+
+    const aberto = (await painel.boundingBox())!.height; // são nove serviços
+
+    await grupo.locator(".MuiAccordionSummary-root").click();
     await page.waitForTimeout(180);
     const aMeio = (await painel.boundingBox())!.height;
 
@@ -127,12 +174,12 @@ test.describe("secções", () => {
   test("revelam-se ao chegar ao ecrã", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/");
-    await page.waitForTimeout(ASSENTAR);
+    await esperarSite(page);
 
     const seccoes = page.locator("[data-revela]");
-    await expect(seccoes).toHaveCount(6);
+    await expect(seccoes).toHaveCount(7);
 
-    const equipa = seccoes.nth(2);
+    const equipa = seccoes.nth(3);
     const opacidade = (l: typeof equipa) => l.evaluate((e) => Number(getComputedStyle(e).opacity));
     expect(await opacidade(equipa)).toBeLessThan(1);
 
@@ -141,7 +188,7 @@ test.describe("secções", () => {
     expect(await opacidade(equipa)).toBe(1);
     expect(await equipa.evaluate((e) => getComputedStyle(e).transform)).toBe("none");
 
-    const ultima = seccoes.nth(5);
+    const ultima = seccoes.nth(6);
     await ultima.scrollIntoViewIfNeeded();
     await page.waitForTimeout(1200);
     expect(await opacidade(ultima)).toBe(1);

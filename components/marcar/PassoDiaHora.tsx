@@ -33,7 +33,7 @@ export default function PassoDiaHora({
         Quando lhe dá jeito?
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Fechamos ao domingo. Os dias sem vaga aparecem apagados.
+        Fechamos ao {M.diasDeFecho()}. Os dias sem vaga aparecem apagados.
       </Typography>
 
       <Box sx={{
@@ -48,7 +48,7 @@ export default function PassoDiaHora({
             onChange={(d) => d && aoEscolherDia(M.chaveData(d))}
             minDate={hoje}
             maxDate={limite}
-            // As regras da casa continuam a mandar: domingo fechado, dias cheios
+            // As regras da casa continuam a mandar: dias de fecho, dias cheios
             // apagados. O componente só trata da mecânica do calendário.
             shouldDisableDate={(d: Date) => {
               const chave = M.chaveData(d);
@@ -70,7 +70,7 @@ export default function PassoDiaHora({
         <Box aria-live="polite">
           {!data ? (
             <Box sx={{
-              border: `1.5px dashed ${cores.fundo4}`, borderRadius: "14px",
+              border: `1.5px dashed ${cores.fundo4}`, borderRadius: 2,
               p: 5, textAlign: "center", color: cores.texto3
             }}>
               <Box sx={{
@@ -81,7 +81,7 @@ export default function PassoDiaHora({
             </Box>
           ) : livres.length === 0 ? (
             <Box sx={{
-              border: `1.5px dashed ${cores.fundo4}`, borderRadius: "14px",
+              border: `1.5px dashed ${cores.fundo4}`, borderRadius: 2,
               p: 5, textAlign: "center", color: cores.texto3
             }}>
               <Typography variant="body2">
@@ -108,7 +108,7 @@ export default function PassoDiaHora({
                     aria-pressed={inicio === s.inicio}
                     data-hora={s.etiqueta}
                     sx={{
-                      py: 1.2, borderRadius: 999, fontSize: 15, fontWeight: 500,
+                      py: 1.2, borderRadius: 2, fontSize: 15, fontWeight: 500,
                       border: `1.5px solid ${inicio === s.inicio ? cores.acento : cores.fundo3}`,
                       bgcolor: inicio === s.inicio ? "primary.main" : "background.default",
                       color: inicio === s.inicio ? cores.fundo : "text.secondary",

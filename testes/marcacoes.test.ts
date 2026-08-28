@@ -11,8 +11,9 @@ const servico = (id: string): Servico => {
   return s;
 };
 
-const corte = servico("corte-classico-maquina-e-tesoura"); // 30 min
-const madeixas = servico("madeixas");                      // 165 min
+const corte = servico("corte-tradicional");   // 30 min
+/* O serviço mais longo da carta: é ele que fixa a última hora marcável do dia. */
+const protese = servico("protese-capilar");  // 180 min
 
 /** Uma segunda-feira futura, para não depender do dia em que os testes correm. */
 function proximaSegunda(): string {
@@ -31,8 +32,23 @@ const KDOM = (() => {
 beforeEach(() => M.recarregar());
 
 describe("horário", () => {
-  it("segunda abre às 10:00 e fecha às 20:00", () => {
-    expect(M.expedienteDe(KSEG)).toEqual({ abre: 600, fecha: 1200 });
+  it("segunda abre às 10:00 e fecha às 19:00", () => {
+    expect(M.expedienteDe(KSEG)).toEqual({ abre: 600, fecha: 1140 });
+  });
+  /* Os dias não são todos iguais — sexta e sábado abrem uma hora mais cedo — e
+     é isso que prova que o expediente sai de `CASA.horario` e não de um valor
+     escrito no motor. */
+  it("sexta abre uma hora mais cedo", () => {
+    const sexta = M.chaveData((() => {
+      const d = M.dataDeChave(KSEG); d.setDate(d.getDate() + 4); return d;
+    })());
+    expect(M.expedienteDe(sexta)).toEqual({ abre: 540, fecha: 1140 });
+  });
+  it("sábado fecha às 18:00", () => {
+    const sabado = M.chaveData((() => {
+      const d = M.dataDeChave(KSEG); d.setDate(d.getDate() + 5); return d;
+    })());
+    expect(M.expedienteDe(sabado)).toEqual({ abre: 540, fecha: 1080 });
   });
   it("domingo está encerrado", () => {
     expect(M.expedienteDe(KDOM)).toBeNull();
@@ -51,13 +67,13 @@ describe("conversões de tempo", () => {
 });
 
 describe("duração contra a hora de fecho", () => {
-  it("um corte de 30 min tem último início às 19:30", () => {
+  it("um corte de 30 min tem último início às 18:30", () => {
     const s = M.horasDoDia(KSEG, corte, "qualquer");
-    expect(s.at(-1)!.etiqueta).toBe("19:30");
+    expect(s.at(-1)!.etiqueta).toBe("18:30");
   });
-  it("madeixas de 165 min só até às 17:15", () => {
-    const s = M.horasDoDia(KSEG, madeixas, "qualquer");
-    expect(s.at(-1)!.etiqueta).toBe("17:15");
+  it("prótese capilar de 180 min só até às 16:00", () => {
+    const s = M.horasDoDia(KSEG, protese, "qualquer");
+    expect(s.at(-1)!.etiqueta).toBe("16:00");
   });
   it("domingo não gera horas", () => {
     expect(M.horasDoDia(KDOM, corte, "qualquer")).toHaveLength(0);
@@ -70,7 +86,7 @@ describe("duração contra a hora de fecho", () => {
 
 describe("conflitos de agenda", () => {
   it("aceita a primeira marcação", () => {
-    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG,
+    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG,
       inicio: 660, nome: "Cliente Um", telemovel: "912345678" });
     expect(r.marcacao).toBeDefined();
     expect(r.erro).toBeUndefined();
@@ -79,37 +95,39 @@ describe("conflitos de agenda", () => {
   });
 
   it("não existe código de reserva", () => {
-    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG,
+    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG,
       inicio: 660, nome: "Cliente", telemovel: "912345678" });
     expect(r.marcacao).not.toHaveProperty("codigo");
   });
 
   it("ocupa o barbeiro escolhido e deixa os outros livres", () => {
-    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG, inicio: 660,
+    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG, inicio: 660,
       nome: "Cliente", telemovel: "912345678" });
-    expect(M.estaLivre(KSEG, 660, 30, "ary")).toBe(false);
-    expect(M.estaLivre(KSEG, 660, 30, "jonatas")).toBe(true);
+    expect(M.estaLivre(KSEG, 660, 30, "bruno")).toBe(false);
+    expect(M.estaLivre(KSEG, 660, 30, "wemysson")).toBe(true);
     expect(M.estaLivre(KSEG, 660, 30, "qualquer")).toBe(true);
   });
 
   it("detecta sobreposição parcial mas permite encostar", () => {
-    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG, inicio: 660,
+    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG, inicio: 660,
       nome: "Cliente", telemovel: "912345678" });
-    expect(M.estaLivre(KSEG, 645, 30, "ary")).toBe(false); // 10:45–11:15 cruza
-    expect(M.estaLivre(KSEG, 630, 30, "ary")).toBe(true);  // 10:30–11:00 encosta
+    expect(M.estaLivre(KSEG, 645, 30, "bruno")).toBe(false); // 10:45–11:15 cruza
+    expect(M.estaLivre(KSEG, 630, 30, "bruno")).toBe(true);  // 10:30–11:00 encosta
   });
 
   it("recusa marcação duplicada no mesmo barbeiro e hora", () => {
-    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG, inicio: 660,
+    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG, inicio: 660,
       nome: "Cliente Um", telemovel: "912345678" });
-    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG,
+    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG,
       inicio: 660, nome: "Cliente Dois", telemovel: "913333333" });
     expect(r.erro).toBeTruthy();
     expect(r.marcacao).toBeUndefined();
   });
 
-  it("fica sem vagas quando os três barbeiros estão ocupados", () => {
-    for (const b of ["ary", "jonatas", "miguel"]) {
+  it("fica sem vagas quando todos os barbeiros estão ocupados", () => {
+    /* Da lista, não escrita à mão: com três nomes fixos, o teste passava a
+       dizer o contrário do que promete no dia em que entrasse um quarto. */
+    for (const b of BARBEIROS.map((x) => x.id)) {
       M.criarMarcacao({ servicoId: corte.id, barbeiroId: b, data: KSEG, inicio: 660,
         nome: "C", telemovel: "914444444" });
     }
@@ -147,18 +165,18 @@ describe("antecedência mínima", () => {
 
 describe("anular", () => {
   it("liberta a hora", () => {
-    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG,
+    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG,
       inicio: 660, nome: "Cliente", telemovel: "912345678" });
     expect(M.marcacoesDoCliente()).toHaveLength(1);
     M.anularMarcacao(r.marcacao!.id);
     expect(M.marcacoesDoCliente()).toHaveLength(0);
-    expect(M.estaLivre(KSEG, 660, 30, "ary")).toBe(true);
+    expect(M.estaLivre(KSEG, 660, 30, "bruno")).toBe(true);
   });
 });
 
 describe("estados", () => {
   it("nasce agendada e aceita mudança de estado", () => {
-    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "miguel", data: KSEG,
+    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "leonardo", data: KSEG,
       inicio: 900, nome: "Estado", telemovel: "917777777" });
     expect(r.marcacao!.estado).toBe("agendada");
     expect(M.definirEstado(r.marcacao!.id, "concluida")).toBe(true);
@@ -166,7 +184,7 @@ describe("estados", () => {
   });
 
   it("recusa estado inválido e id inexistente", () => {
-    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "miguel", data: KSEG,
+    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "leonardo", data: KSEG,
       inicio: 900, nome: "Estado", telemovel: "917777777" });
     // @ts-expect-error estado inválido de propósito
     expect(M.definirEstado(r.marcacao!.id, "inventado")).toBe(false);
@@ -176,9 +194,9 @@ describe("estados", () => {
 
 describe("consultas do painel", () => {
   beforeEach(() => {
-    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG, inicio: 660,
+    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG, inicio: 660,
       nome: "A", telemovel: "912345678" });
-    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "miguel", data: KSEG, inicio: 600,
+    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "leonardo", data: KSEG, inicio: 600,
       nome: "B", telemovel: "913345678" });
   });
 
@@ -189,9 +207,9 @@ describe("consultas do painel", () => {
   });
 
   it("filtra por barbeiro", () => {
-    const so = M.marcacoesDe(KSEG, "miguel");
+    const so = M.marcacoesDe(KSEG, "leonardo");
     expect(so).toHaveLength(1);
-    expect(so[0].barbeiroId).toBe("miguel");
+    expect(so[0].barbeiroId).toBe("leonardo");
   });
 
   it("resume contagem, ocupação e receita", () => {
@@ -212,10 +230,10 @@ describe("consultas do painel", () => {
 
 describe("ficheiro .ics", () => {
   const gerar = () => {
-    const r = M.criarMarcacao({ servicoId: madeixas.id, barbeiroId: "ary", data: KSEG,
+    const r = M.criarMarcacao({ servicoId: protese.id, barbeiroId: "bruno", data: KSEG,
       inicio: 615, nome: "Ana; Silva, Jr", telemovel: "918888888",
       notas: "Linha um\nlinha dois" });
-    return M.paraICS(r.marcacao!, madeixas);
+    return M.paraICS(r.marcacao!, protese);
   };
 
   it("usa CRLF, como a norma exige", () => {
@@ -228,7 +246,7 @@ describe("ficheiro .ics", () => {
     const ics = gerar();
     expect(ics.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
     expect(ics.trimEnd().endsWith("END:VCALENDAR")).toBe(true);
-    expect(ics).toMatch(/^UID:.+@barbearia-garcia$/m);
+    expect(ics).toMatch(/^UID:.+@manspace$/m);
     expect(ics).toMatch(/^DTSTART:\d{8}T\d{6}Z$/m);
     expect(ics).toMatch(/^DTEND:\d{8}T\d{6}Z$/m);
     expect(ics).toContain("BEGIN:VALARM");
@@ -240,7 +258,7 @@ describe("ficheiro .ics", () => {
       const m = ics.match(new RegExp(`^${t}:(\\d{4})(\\d{2})(\\d{2})T(\\d{2})(\\d{2})`, "m"))!;
       return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
     };
-    expect((ler("DTEND") - ler("DTSTART")) / 60000).toBe(madeixas.minutos);
+    expect((ler("DTEND") - ler("DTSTART")) / 60000).toBe(protese.minutos);
   });
 
   it("escapa vírgulas e quebras de linha", () => {
@@ -257,7 +275,7 @@ describe("ficheiro .ics", () => {
 
 describe("ligação para o Google Agenda", () => {
   it("leva o intervalo e o modelo", () => {
-    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG,
+    const r = M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG,
       inicio: 660, nome: "Cliente", telemovel: "912345678" });
     const url = M.ligacaoGoogleAgenda(r.marcacao!, corte);
     expect(url.startsWith("https://calendar.google.com/calendar/render?")).toBe(true);
@@ -268,7 +286,7 @@ describe("ligação para o Google Agenda", () => {
 
 describe("limpar", () => {
   it("esvazia o armazenamento", () => {
-    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "ary", data: KSEG, inicio: 660,
+    M.criarMarcacao({ servicoId: corte.id, barbeiroId: "bruno", data: KSEG, inicio: 660,
       nome: "Cliente", telemovel: "912345678" });
     M.limparTudo();
     expect(M.todasAsMarcacoes()).toHaveLength(0);

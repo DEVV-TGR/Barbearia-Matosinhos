@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import { cores, tituloFonte } from "@/app/design";
+import { cores, comAlfa, tituloFonte } from "@/app/design";
 
 /**
  * Faixa fixa ao fundo do ecrã, amarela por inteiro. Sobe assim que há uma
@@ -31,7 +31,7 @@ export default function BarraAccao({
         px: { xs: 2, md: 3 },
         pt: 1.6,
         pb: "calc(1rem + env(safe-area-inset-bottom, 0px))",
-        boxShadow: "0 -14px 34px -18px rgba(0,0,0,0.85)",
+        boxShadow: `0 -14px 34px -20px ${comAlfa(cores.acento, 0.7)}`,
         animation: "subir 320ms cubic-bezier(0.22,1,0.36,1)",
         "@keyframes subir": {
           from: { transform: "translateY(100%)", opacity: 0 },
@@ -49,8 +49,8 @@ export default function BarraAccao({
             aria-label="Voltar atrás"
             sx={{
               flex: "none", width: 46, height: 46,
-              border: "2px solid rgba(13,42,31,0.35)", color: cores.fundo,
-              "&:hover": { borderColor: cores.fundo, bgcolor: "rgba(13,42,31,0.1)" }
+              border: `2px solid ${comAlfa(cores.fundo, 0.45)}`, color: cores.fundo,
+              "&:hover": { borderColor: cores.fundo, bgcolor: comAlfa(cores.fundo, 0.12) }
             }}
           >
             <Box component="svg" viewBox="0 0 24 24" width={20} height={20} fill="none"
@@ -69,7 +69,7 @@ export default function BarraAccao({
             {titulo}
           </Typography>
           <Typography sx={{
-            fontSize: 13, color: "rgba(13,42,31,0.72)",
+            fontSize: 13, color: comAlfa(cores.fundo, 0.78),
             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
           }}>
             {detalhe}
@@ -83,7 +83,7 @@ export default function BarraAccao({
             flex: "none",
             bgcolor: cores.fundo, color: "primary.main",
             "&:hover": { bgcolor: cores.fundo3, color: cores.acento2 },
-            "&.Mui-disabled": { bgcolor: "rgba(13,42,31,0.18)", color: "rgba(13,42,31,0.55)" }
+            "&.Mui-disabled": { bgcolor: comAlfa(cores.fundo, 0.22), color: comAlfa(cores.fundo, 0.62) }
           }}
         >
           {rotulo}

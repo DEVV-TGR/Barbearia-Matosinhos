@@ -35,13 +35,23 @@ function Seta() {
  * nem deixar o botão sozinho numa terceira linha.
  */
 function Linha({ s, aberto, ordem }: { s: Servico; aberto: boolean; ordem: number }) {
-  const preco = (
+  /* No poster o preço é o segundo elemento mais forte da linha, a seguir ao
+     nome, e está a bronze. Os que são um mínimo levam "desde" à frente, em
+     corpo pequeno, para o número continuar a ser o que se lê primeiro. */
+  const etiquetaPreco = (
     <Typography sx={{
-      fontFamily: tituloFonte.style.fontFamily, fontSize: s.preco ? "1.4rem" : "0.85rem",
-      fontWeight: 600, color: s.preco ? "primary.main" : cores.texto3,
-      whiteSpace: "nowrap", lineHeight: 1,
-      textTransform: s.preco ? "none" : "uppercase"
+      fontFamily: tituloFonte.style.fontFamily, fontSize: "1.4rem",
+      fontWeight: 500, color: cores.acento3,
+      whiteSpace: "nowrap", lineHeight: 1, letterSpacing: "0.01em"
     }}>
+      {s.desde && (
+        <Box component="span" sx={{
+          fontSize: "0.62em", textTransform: "uppercase", letterSpacing: "0.16em",
+          color: cores.texto3, mr: 0.7
+        }}>
+          desde
+        </Box>
+      )}
       {euros(s.preco)}
     </Typography>
   );
@@ -51,8 +61,8 @@ function Linha({ s, aberto, ordem }: { s: Servico; aberto: boolean; ordem: numbe
       component="li"
       data-servico-linha
       sx={{
-        p: 2, bgcolor: "background.default",
-        border: "1px solid transparent", borderRadius: "14px",
+        p: { xs: 1.25, md: 2 }, bgcolor: "background.default",
+        border: "1px solid transparent", borderRadius: 0,
 
         /* A abrir, as linhas sobem em escada, atrás do painel a crescer; a
            fechar caem todas ao mesmo tempo e depressa, senão a última ainda se
@@ -71,18 +81,34 @@ function Linha({ s, aberto, ordem }: { s: Servico; aberto: boolean; ordem: numbe
           transform: { md: "translate3d(4px, 0, 0)" }
         },
         display: "grid",
-        gap: 1.2,
+        /* No telemóvel a linha tem duas alturas — nome e descrição em cima, o
+           resto em baixo. Com 1.2 de intervalo o cartão passava dos 120px que o
+           teste de escala impõe, e vinte e cinco cartões assim davam outro ecrã
+           e meio de scroll. */
+        gap: { xs: 1, md: 1.2 },
         gridTemplateColumns: { xs: "1fr", md: "1fr auto auto auto" },
         alignItems: { md: "center" },
         columnGap: { md: 2.5 }
       }}
     >
-      <Typography sx={{
-        fontFamily: tituloFonte.style.fontFamily, fontWeight: 500, fontSize: "1.15rem",
-        textTransform: "uppercase", lineHeight: 1.15
-      }}>
-        {s.nome}
-      </Typography>
+      <Box>
+        <Typography sx={{
+          fontFamily: tituloFonte.style.fontFamily, fontWeight: 500, fontSize: "1.15rem",
+          textTransform: "uppercase", lineHeight: 1.15, letterSpacing: "0.04em"
+        }}>
+          {s.nome}
+        </Typography>
+        {/* A frase do poster. Sem ela, "método full barba" e "barbaterapia"
+            são dois nomes que ninguém sabe distinguir. */}
+        {s.descricao && (
+          <Typography variant="body2" sx={{
+            color: cores.texto3, mt: { xs: 0.25, md: 0.4 }, lineHeight: 1.4,
+            fontSize: { xs: 14, md: 15 }
+          }}>
+            {s.descricao}
+          </Typography>
+        )}
+      </Box>
 
       {/* Segunda linha em telemóvel; em ecrã largo dissolve-se na grelha */}
       <Box sx={{
@@ -94,7 +120,7 @@ function Linha({ s, aberto, ordem }: { s: Servico; aberto: boolean; ordem: numbe
         </Typography>
 
         <Box sx={{ display: { xs: "flex", md: "contents" }, alignItems: "center", gap: 2 }}>
-          {preco}
+          {etiquetaPreco}
           <BotaoLink
             href={`/marcar?servico=${encodeURIComponent(s.id)}`}
             variant="outlined"
@@ -111,9 +137,16 @@ function Linha({ s, aberto, ordem }: { s: Servico; aberto: boolean; ordem: numbe
 
 export default function Carta() {
   /* Controlado, e não `defaultExpanded`, porque as linhas precisam de saber se
-     o grupo está aberto para entrarem em escada. Guardam-se os fechados: assim
-     a carta abre inteira, que é como se lê melhor. */
-  const [fechados, setFechados] = useState<readonly string[]>([]);
+     o grupo está aberto para entrarem em escada.
+
+     Abre só o primeiro grupo. A carta anterior tinha dezanove serviços num
+     grupo único e abria inteira, que era como se lia melhor; esta tem vinte e
+     cinco repartidos por cinco famílias, e aberta de uma vez faz 4 424px no
+     telemóvel — cinco ecrãs só de preços, com os nomes dos grupos a passar
+     depressa demais para se verem. Fechada, a carta mostra primeiro do que é
+     que é feita. O estado inicial é calculado do mesmo modo no servidor e no
+     cliente, para não haver um salto depois de hidratar. */
+  const [fechados, setFechados] = useState<readonly string[]>(() => GRUPOS.slice(1));
 
   const alternar = (grupo: string) => (_e: React.SyntheticEvent, aAbrir: boolean) =>
     setFechados((anteriores) =>

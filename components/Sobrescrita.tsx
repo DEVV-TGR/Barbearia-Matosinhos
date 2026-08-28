@@ -1,14 +1,39 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { cores, comAlfa } from "@/app/design";
 
-/** Rótulo de secção: traço curto e maiúsculas espaçadas. */
-export default function Sobrescrita({ children }: { children: React.ReactNode }) {
+/**
+ * Rótulo de secção — a etiqueta preta do poster.
+ *
+ * No impresso, cada bloco é anunciado por uma placa preta com o nome a dourado,
+ * pousada sobre um filete que atravessa a largura toda. É o gesto que identifica
+ * a marca à distância, e não custa mais do que o traço e o texto que substitui.
+ */
+export default function Sobrescrita({
+  children, centrado = false
+}: { children: React.ReactNode; centrado?: boolean }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1.6, mb: 2 }}>
-      <Box sx={{ width: "1.8rem", height: "2px", bgcolor: "primary.main", borderRadius: 1, flex: "none" }} />
-      <Typography variant="overline" color="primary.main" component="p">
-        {children}
-      </Typography>
+    <Box sx={{
+      display: "flex", alignItems: "center", gap: 2, mb: 2.5,
+      justifyContent: centrado ? "center" : "flex-start"
+    }}>
+      {centrado && (
+        <Box sx={{ flex: 1, height: "1px", bgcolor: comAlfa(cores.acento3, 0.4) }} />
+      )}
+
+      <Box sx={{
+        bgcolor: cores.acento,
+        px: 2.2, py: 0.9,
+        flex: "none"
+      }}>
+        <Typography variant="overline" component="p" sx={{
+          color: cores.fundo, lineHeight: 1, display: "block"
+        }}>
+          {children}
+        </Typography>
+      </Box>
+
+      <Box sx={{ flex: 1, height: "1px", bgcolor: comAlfa(cores.acento3, 0.4) }} />
     </Box>
   );
 }

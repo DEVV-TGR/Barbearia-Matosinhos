@@ -54,7 +54,7 @@ export function useMarcacoes() {
   return { pronto, versao, criar, anular, mudarEstado, semear, limpar, actualizar };
 }
 
-const CHAVE_CLIENTE = "barbearia-garcia:cliente:v1";
+const CHAVE_CLIENTE = "manspace:cliente:v1";
 
 export interface DadosCliente { nome: string; telemovel: string; }
 

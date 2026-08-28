@@ -9,23 +9,27 @@ const escolherServico = async (p: Page, id: string) => {
 test.describe("página inicial", () => {
   test("mostra a carta, a equipa e liga a marcar", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/Barbearia Garcia/);
+    await expect(page).toHaveTitle(/Man Space/);
 
-    // 19 serviços, com botão próprio cada um
+    // 25 serviços na carta + os dois packs na secção das experiências
     const marcar = page.locator('a[href^="/marcar?servico="]');
-    await expect(marcar).toHaveCount(19);
+    await expect(marcar).toHaveCount(27);
 
-    await expect(page.getByText("13 €").first()).toBeVisible();
-    await expect(page.getByText("Sob orçamento").first()).toBeVisible();
-    await expect(page.locator("article")).toHaveCount(3); // barbeiros
+    // O primeiro grupo é o das experiências, e é o único aberto de origem
+    await expect(page.getByText("50 €").first()).toBeVisible();
+    await expect(page.getByText("16 €").first()).toBeAttached();
+    // Sete serviços têm preço a partir de, não fechado
+    await expect(page.getByText("desde", { exact: true }).first()).toBeAttached();
+    await expect(page.locator("article")).toHaveCount(4); // barbeiros
 
     const fundo = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(fundo).toBe("rgb(13, 42, 31)");
+    expect(fundo).toBe("rgb(244, 235, 222)");
   });
 
   test("os grupos da carta abrem e fecham", async ({ page }) => {
     await page.goto("/#servicos");
-    const barbearia = page.locator(".MuiAccordion-root").first();
+    // O primeiro grupo abre de origem; os restantes ficam fechados.
+    const barbearia = page.locator("#servicos .MuiAccordion-root").first();
     const primeiro = barbearia.locator('a[href^="/marcar?servico="]').first();
     await expect(primeiro).toBeVisible();
 
@@ -39,35 +43,35 @@ test.describe("página inicial", () => {
 
 test.describe("marcações", () => {
   test("ligação directa abre com o serviço escolhido", async ({ page }) => {
-    await page.goto("/marcar?servico=corte-degrade");
+    await page.goto("/marcar?servico=corte-tradicional");
     await expect(page.getByRole("heading", { name: "Com quem?" })).toBeVisible();
     // O passo do serviço já não está no ecrã: a prova é a barra de acção
-    await expect(page.getByTestId("barra-accao")).toContainText("Corte Degradé");
+    await expect(page.getByTestId("barra-accao")).toContainText("Corte tradicional");
 
     // E ao voltar atrás, o atalho aparece assinalado
     await page.getByLabel("Voltar atrás").click();
-    await expect(page.locator('[data-atalho="corte-degrade"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator('[data-atalho="corte-tradicional"]')).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("a faixa de acção é amarela e mostra a escolha", async ({ page }) => {
+  test("a faixa de acção é preta e mostra a escolha", async ({ page }) => {
     await page.goto("/marcar");
-    await escolherServico(page, "corte-degrade");
+    await escolherServico(page, "corte-tradicional");
 
     const barra = page.getByTestId("barra-accao");
     await expect(barra).toBeVisible();
-    await expect(barra).toContainText("Corte Degradé");
-    await expect(barra).toContainText("15 €");
+    await expect(barra).toContainText("Corte tradicional");
+    await expect(barra).toContainText("16 €");
 
     const estilo = await barra.evaluate((e) => {
       const c = getComputedStyle(e);
       return { fundo: c.backgroundColor, posicao: c.position };
     });
-    expect(estilo.fundo).toBe("rgb(242, 183, 5)");
+    expect(estilo.fundo).toBe("rgb(23, 19, 16)");
     expect(estilo.posicao).toBe("fixed");
 
-    // Sobre amarelo, o texto tem de ser verde escuro
+    // Sobre o preto da casa, o texto tem de ser creme
     const cor = await barra.locator("p").first().evaluate((e) => getComputedStyle(e).color);
-    expect(cor).toBe("rgb(13, 42, 31)");
+    expect(cor).toBe("rgb(244, 235, 222)");
 
     // A barra só sobe depois de haver escolha, por isso Avançar já está activo
     await expect(page.getByRole("button", { name: "Avançar" })).toBeEnabled();
@@ -75,10 +79,10 @@ test.describe("marcações", () => {
 
   test("percurso completo até ao calendário e à confirmação", async ({ page }) => {
     await page.goto("/marcar");
-    await escolherServico(page, "corte-degrade");
+    await escolherServico(page, "corte-tradicional");
     await page.getByRole("button", { name: "Avançar" }).click();
 
-    await page.locator('[data-barbeiro="jonatas"]').click();
+    await page.locator('[data-barbeiro="wemysson"]').click();
     await page.getByRole("button", { name: "Avançar" }).click();
 
     // Passo do dia: o calendário do MUI com as regras da casa
@@ -107,7 +111,7 @@ test.describe("marcações", () => {
     const confirmacao = page.getByTestId("confirmacao");
     await expect(confirmacao).toBeVisible();
     await expect(confirmacao).toContainText("Gonçalo");
-    await expect(confirmacao).toContainText("Jónatas");
+    await expect(confirmacao).toContainText("Wemysson");
     await expect(confirmacao).toContainText(hora);
     await expect(page.getByTestId("barra-accao")).toBeHidden();
 
@@ -118,8 +122,8 @@ test.describe("marcações", () => {
   });
 
   test("guarda no calendário em .ics", async ({ page }) => {
-    await page.goto("/marcar?servico=barba-a-vapor");
-    await page.locator('[data-barbeiro="ary"]').click();
+    await page.goto("/marcar?servico=barba-modelada-toalha");
+    await page.locator('[data-barbeiro="bruno"]').click();
     await page.getByRole("button", { name: "Avançar" }).click();
     await page.locator(".MuiPickerDay-root:not(.Mui-disabled):not([disabled])").first().click();
     await page.locator("[data-hora]:not(.Mui-disabled)").first().click();
@@ -132,13 +136,13 @@ test.describe("marcações", () => {
       page.waitForEvent("download"),
       page.getByRole("button", { name: /Guardar no calendário/ }).click()
     ]);
-    expect(descarga.suggestedFilename()).toMatch(/^barbearia-garcia-.*\.ics$/);
+    expect(descarga.suggestedFilename()).toMatch(/^manspace-.*\.ics$/);
 
     const fs = await import("fs");
     const conteudo = fs.readFileSync((await descarga.path())!, "utf8");
     expect(conteudo.startsWith("BEGIN:VCALENDAR")).toBe(true);
     expect(conteudo).toContain("\r\n");
-    expect(conteudo).toContain("Barba a Vapor");
+    expect(conteudo).toContain("Barba modelada + toalha");
 
     const gcal = await page.getByTestId("google-agenda").getAttribute("href");
     expect(gcal).toContain("calendar.google.com");
@@ -148,8 +152,8 @@ test.describe("marcações", () => {
 test.describe("painel", () => {
   test("pede código, mostra a agenda e muda estados", async ({ page }) => {
     // Marcar primeiro, para o painel ter o que mostrar
-    await page.goto("/marcar?servico=corte-degrade");
-    await page.locator('[data-barbeiro="jonatas"]').click();
+    await page.goto("/marcar?servico=corte-tradicional");
+    await page.locator('[data-barbeiro="wemysson"]').click();
     await page.getByRole("button", { name: "Avançar" }).click();
     const dia = page.locator(".MuiPickerDay-root:not(.Mui-disabled):not([disabled])").first();
     const numeroDia = (await dia.textContent())!.trim();
@@ -168,14 +172,14 @@ test.describe("painel", () => {
     await page.getByRole("button", { name: "Entrar" }).click();
     await expect(page.getByText("Código errado.")).toBeVisible();
 
-    await page.locator('[data-campo="pin"]').fill("1997");
+    await page.locator('[data-campo="pin"]').fill("2024");
     await page.getByRole("button", { name: "Entrar" }).click();
     await expect(page.getByTestId("agenda")).toBeVisible();
 
     // Ir directamente ao dia da marcação. Percorrer dia a dia com esperas
     // fixas falhava de vez em quando com os testes em paralelo.
     const diaMarcado = await page.evaluate(() => {
-      const bruto = localStorage.getItem("barbearia-garcia:marcacoes:v1") ?? "[]";
+      const bruto = localStorage.getItem("manspace:marcacoes:v1") ?? "[]";
       const minhas = (JSON.parse(bruto) as { minha: boolean; data: string }[]).filter((m) => m.minha);
       return minhas.at(-1)?.data ?? "";
     });
@@ -187,7 +191,7 @@ test.describe("painel", () => {
 
     const cartao = page.getByTestId("marcacao").filter({ hasText: "Rui Pereira" });
     await expect(cartao).toHaveCount(1);
-    await expect(cartao).toContainText("Corte Degradé");
+    await expect(cartao).toContainText("Corte tradicional");
     await expect(cartao).toContainText("916666666");
 
     await cartao.locator('[data-accao="concluida"]').click();
@@ -195,9 +199,9 @@ test.describe("painel", () => {
       .toHaveAttribute("data-estado", "concluida");
 
     // Filtro por barbeiro
-    await page.locator('[data-filtro="ary"]').click();
+    await page.locator('[data-filtro="bruno"]').click();
     await expect(page.getByTestId("agenda")).not.toContainText("Rui Pereira");
-    await page.locator('[data-filtro="jonatas"]').click();
+    await page.locator('[data-filtro="wemysson"]').click();
     await expect(page.getByTestId("agenda")).toContainText("Rui Pereira");
   });
 });
@@ -205,7 +209,7 @@ test.describe("painel", () => {
 test.describe("menu em cartão no telemóvel", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("abre ao centro, é amarelo e fecha como deve", async ({ page }) => {
+  test("abre ao centro, é preto e fecha como deve", async ({ page }) => {
     await page.goto("/");
     const abrir = page.getByLabel("Abrir menu");
     await expect(abrir).toBeVisible();
@@ -221,14 +225,14 @@ test.describe("menu em cartão no telemóvel", () => {
         cx: Math.round(r.left + r.width / 2), largura: Math.round(r.width)
       };
     });
-    expect(info.fundo).toBe("rgb(242, 183, 5)");
+    expect(info.fundo).toBe("rgb(23, 19, 16)");
     expect(info.sombra).not.toBe("none");
     expect(Math.abs(info.cx - 195)).toBeLessThanOrEqual(3); // centrado
     expect(info.largura).toBeLessThan(390);
 
     const corLink = await cartao.getByRole("link", { name: "Início" })
       .evaluate((e) => getComputedStyle(e).color);
-    expect(corLink).toBe("rgb(13, 42, 31)");
+    expect(corLink).toBe("rgb(244, 235, 222)");
 
     // Escape fecha (o Dialog do MUI trata disto de origem)
     await page.keyboard.press("Escape");
@@ -355,7 +359,7 @@ test.describe("layout no telemóvel", () => {
 
   test("os cartões do painel são compactos", async ({ page }) => {
     await page.goto("/painel");
-    await page.locator('[data-campo="pin"]').fill("1997");
+    await page.locator('[data-campo="pin"]').fill("2024");
     await page.getByRole("button", { name: "Entrar" }).click();
     await page.getByRole("button", { name: /Carregar agenda/ }).click();
     await page.waitForTimeout(800);
@@ -387,7 +391,7 @@ test.describe("painel no telemóvel", () => {
 
   test("o selo de estado não fica cortado", async ({ page }) => {
     await page.goto("/painel");
-    await page.locator('[data-campo="pin"]').fill("1997");
+    await page.locator('[data-campo="pin"]').fill("2024");
     await page.getByRole("button", { name: "Entrar" }).click();
     await page.getByRole("button", { name: /Carregar agenda/ }).click();
     await page.waitForTimeout(800);

@@ -3,7 +3,12 @@
 /* ==========================================================================
    Tema — traduz o sistema visual da casa para o MUI.
    O MUI traz consigo o aspecto Material; aqui ele é desfeito de propósito:
-   cantos em pill, sem sombras de elevação, tipografia condensada nos títulos.
+   cantos quase rectos, sem sombras de elevação, serifa nos títulos.
+
+   O sistema não foi inventado: está no poster de preços da loja. Creme por
+   baixo, filete fino a separar, etiqueta preta a anunciar cada bloco e o preço
+   grande a bronze. O que este ficheiro faz é obrigar o Material a comportar-se
+   como papel impresso.
    ========================================================================== */
 
 import { createTheme } from "@mui/material/styles";
@@ -35,8 +40,11 @@ const tema = createTheme({
   },
 
   palette: {
-    mode: "dark",
-    primary:   { main: cores.acento, light: cores.acento2, dark: cores.acento3, contrastText: cores.fundo },
+    mode: "light",
+    /* `light` e `dark` invertem-se em relação ao tema anterior: sobre creme, o
+       hover de um botão preto tem de escurecer — clarear aproximava-o do fundo.
+       É `dark` que o MUI usa no hover do preenchido. */
+    primary:   { main: cores.acento, light: cores.acento3, dark: cores.acento2, contrastText: cores.fundo },
     secondary: { main: cores.texto, contrastText: cores.fundo },
     background: { default: cores.fundo, paper: cores.fundo2 },
     text:      { primary: cores.texto, secondary: cores.texto2, disabled: cores.texto3 },
@@ -45,29 +53,37 @@ const tema = createTheme({
     divider:   cores.fundo3
   },
 
-  shape: { borderRadius: 14 },
+  /* Dois pixéis, não catorze: o arredondado do Material dá um ar de aplicação,
+     e isto é um impresso. */
+  shape: { borderRadius: 2 },
 
   typography: {
     fontFamily: corpoFonte.style.fontFamily,
     htmlFontSize: 16,
     fontSize: 16,
-    h1: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 600, lineHeight: 0.9,
-          textTransform: "uppercase", letterSpacing: "-0.02em" },
-    h2: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 600, lineHeight: 1.02,
-          textTransform: "uppercase" },
-    h3: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 600, lineHeight: 1.05,
-          textTransform: "uppercase" },
-    h4: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 500, lineHeight: 1.1,
-          textTransform: "uppercase" },
-    h5: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 500, textTransform: "uppercase" },
-    h6: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 500, textTransform: "uppercase" },
-    body1: { fontSize: 17, fontWeight: 350, lineHeight: 1.65 },
-    body2: { fontSize: 15, fontWeight: 350, lineHeight: 1.6 },
-    button: { fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", fontSize: 14 },
+    /* A condensada anterior pedia tracking negativo para não desfiar. A serifa
+       pede o contrário: o wordmark da casa é "M A N  S P A C E", e é o espaço
+       entre as letras que o faz parecer caro. Nenhum título desce de 0.04em. */
+    h1: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 400, lineHeight: 0.95,
+          textTransform: "uppercase", letterSpacing: "0.05em" },
+    h2: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 400, lineHeight: 1.05,
+          textTransform: "uppercase", letterSpacing: "0.045em" },
+    h3: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 400, lineHeight: 1.1,
+          textTransform: "uppercase", letterSpacing: "0.04em" },
+    h4: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 500, lineHeight: 1.15,
+          textTransform: "uppercase", letterSpacing: "0.04em" },
+    h5: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 500,
+          textTransform: "uppercase", letterSpacing: "0.04em" },
+    h6: { fontFamily: tituloFonte.style.fontFamily, fontWeight: 500,
+          textTransform: "uppercase", letterSpacing: "0.04em" },
+    /* A Jost é geométrica e de olho pequeno: a 1.65 as linhas colavam-se. */
+    body1: { fontSize: 17, fontWeight: 400, lineHeight: 1.72 },
+    body2: { fontSize: 15, fontWeight: 400, lineHeight: 1.68 },
+    button: { fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", fontSize: 13 },
     // Rótulos: pequenos, mas nunca abaixo do mínimo
-    overline: { fontSize: MINIMO + 1, fontWeight: 700, letterSpacing: "0.24em",
+    overline: { fontSize: MINIMO + 1, fontWeight: 500, letterSpacing: "0.3em",
                 textTransform: "uppercase", lineHeight: 1.6 },
-    caption: { fontSize: MINIMO + 1, fontWeight: 500, lineHeight: 1.5 }
+    caption: { fontSize: MINIMO + 1, fontWeight: 400, lineHeight: 1.55 }
   },
 
   components: {
@@ -117,14 +133,16 @@ const tema = createTheme({
         /* Saltar para uma âncora não pode deixar o título debaixo do
            cabeçalho fixo: 54px de cabeçalho mais folga. */
         "[id]": { scrollMarginTop: "88px" },
-        // Grão sobre tudo, para as superfícies grandes não ficarem lisas demais
+        /* Grão sobre tudo, para as superfícies grandes não ficarem lisas demais.
+           Sobre creme entra a metade do valor que tinha sobre verde-escuro: a
+           mesma opacidade que ali era textura, aqui lê-se como papel sujo. */
         "body::after": {
           content: '""',
           position: "fixed",
           inset: 0,
           zIndex: 9999,
           pointerEvents: "none",
-          opacity: 0.03,
+          opacity: 0.016,
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E\")"
         },
@@ -136,7 +154,7 @@ const tema = createTheme({
       defaultProps: { disableElevation: true },
       styleOverrides: {
         root: {
-          borderRadius: 999,
+          borderRadius: 2,
           padding: "0.85rem 2rem",
           borderWidth: 2,
           "&:hover": { borderWidth: 2, transform: "translateY(-2px)" },
@@ -177,7 +195,7 @@ const tema = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 999, fontWeight: 700, letterSpacing: "0.1em",
+          borderRadius: 2, fontWeight: 500, letterSpacing: "0.12em",
           transition: `background-color ${TEMPO.curto}ms ${CURVA.suave}, color ${TEMPO.curto}ms ${CURVA.suave}, transform ${TEMPO.curto}ms ${CURVA.suave}`
         },
         label: { fontSize: MINIMO + 1 }

@@ -1,9 +1,11 @@
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { cores } from "@/app/design";
 
 /**
  * Título de secção com uma parte em destaque.
- * `destaque` sai a amarelo, como "sua vez" em "Marque a sua vez".
+ * `destaque` sai a bronze, como "sua vez" em "Marque a sua vez" — a mesma cor
+ * dos preços no poster, e a única que se destaca do preto sem gritar.
  */
 export default function TituloSeccao({
   children, destaque, component = "h2", sx
@@ -23,7 +25,7 @@ export default function TituloSeccao({
       {destaque != null && (
         <>
           {children ? " " : null}
-          <Box component="span" sx={{ color: "primary.main" }}>{destaque}</Box>
+          <Box component="span" sx={{ color: cores.acento3 }}>{destaque}</Box>
         </>
       )}
     </Typography>

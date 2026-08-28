@@ -5,7 +5,7 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import * as M from "@/lib/marcacoes";
 import type { Servico } from "@/lib/dados";
-import { euros } from "@/lib/formatar";
+import { preco } from "@/lib/formatar";
 import { cores, tituloFonte } from "@/app/design";
 
 function Linha({ rotulo, valor, total }: { rotulo: string; valor: React.ReactNode; total?: boolean }) {
@@ -31,7 +31,7 @@ export default function Resumo({ servico, barbeiroId, data, inicio, titulo = "Re
   servico: Servico; barbeiroId: string; data: string; inicio: number; titulo?: string;
 }) {
   return (
-    <Paper sx={{ p: 2.5, borderRadius: "14px", bgcolor: "background.default" }}>
+    <Paper sx={{ p: 2.5, borderRadius: 2, bgcolor: "background.default" }}>
       <Typography variant="overline" component="h4" sx={{ color: "primary.main", display: "block", mb: 1.5 }}>
         {titulo}
       </Typography>
@@ -40,7 +40,7 @@ export default function Resumo({ servico, barbeiroId, data, inicio, titulo = "Re
         <Linha rotulo="Barbeiro" valor={M.nomeBarbeiro(barbeiroId)} />
         <Linha rotulo="Dia" valor={M.dataPorExtenso(data)} />
         <Linha rotulo="Hora" valor={`${M.paraHoras(inicio)} – ${M.paraHoras(inicio + servico.minutos)}`} />
-        <Linha rotulo="A pagar no balcão" valor={euros(servico.preco)} total />
+        <Linha rotulo="A pagar no balcão" valor={preco(servico)} total />
       </Box>
     </Paper>
   );

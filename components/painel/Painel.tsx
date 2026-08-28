@@ -6,13 +6,14 @@ import Typography from "@mui/material/Typography";
 import Entrada from "./Entrada";
 import Agenda from "./Agenda";
 import { useMarcacoes } from "@/lib/useMarcacoes";
-import { cores } from "@/app/design";
+import { cores, comAlfa } from "@/app/design";
 
 /* O código está no código-fonte: numa demonstração sem servidor não há forma
    de o esconder. Serve para separar o painel do site público, não para
    proteger dados. */
-const CODIGO = "1997";
-const CHAVE_SESSAO = "barbearia-garcia:painel:v1";
+// POR CONFIRMAR: passa a ser o ano de abertura da casa, quando o soubermos.
+const CODIGO = "2024";
+const CHAVE_SESSAO = "manspace:painel:v1";
 
 export default function Painel() {
   const { pronto } = useMarcacoes();
@@ -39,7 +40,7 @@ export default function Painel() {
   return (
     <Box sx={{
       pt: { xs: 12, md: 16 }, pb: 8, minHeight: "100svh",
-      background: `radial-gradient(ellipse at 50% 0%, rgba(242,183,5,0.05), transparent 50%), ${cores.fundo}`
+      background: `radial-gradient(ellipse at 50% 0%, ${comAlfa(cores.acento3, 0.06)}, transparent 50%), ${cores.fundo}`
     }}>
       {!verificado || !pronto ? (
         <Typography color="text.secondary" sx={{ textAlign: "center", py: 8 }}>

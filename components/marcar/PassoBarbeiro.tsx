@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import ButtonBase from "@mui/material/ButtonBase";
 import Typography from "@mui/material/Typography";
 import { BARBEIROS } from "@/lib/dados";
-import { cores, tituloFonte } from "@/app/design";
+import { cores, comAlfa, tituloFonte } from "@/app/design";
 
 function Opcao({ id, nome, papel, foto, escolhido, aoEscolher }: {
   id: string; nome: string; papel: string; foto?: string;
@@ -18,8 +18,8 @@ function Opcao({ id, nome, papel, foto, escolhido, aoEscolher }: {
       data-barbeiro={id}
       sx={{
         border: `1.5px solid ${escolhido ? cores.acento : cores.fundo3}`,
-        bgcolor: escolhido ? "rgba(242,183,5,0.08)" : "background.default",
-        borderRadius: "14px", p: 2, width: "100%", height: "100%",
+        bgcolor: escolhido ? comAlfa(cores.acento3, 0.1) : "background.default",
+        borderRadius: 2, p: 2, width: "100%", height: "100%",
         display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "center", gap: 2,
         textAlign: "left",
         transition: "border-color 200ms, background 200ms, transform 200ms",

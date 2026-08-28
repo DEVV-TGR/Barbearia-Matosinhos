@@ -1,30 +1,56 @@
-# Barbearia Garcia & Tatuagem — site de demonstração
+# Man Space | Male Concept — site de demonstração
 
-Site demo para a [Barbearia Garcia & Tatuagem](https://noona.pt/barbeariagarcia),
-em Moreira, Maia. Next.js, React e MUI.
+Site demo para o [Man Space](https://www.instagram.com/manspace.pt/), barbearia
+masculina em Matosinhos. Next.js, React e MUI.
 
 > **Isto é uma demonstração.** Não é o site oficial da barbearia. As marcações
 > ficam guardadas apenas no navegador de quem visita e não chegam à loja.
+
+## Por confirmar
+
+Está tudo em [`lib/dados.ts`](lib/dados.ts), assinalado com `POR CONFIRMAR`, e
+o site sabe esconder o que estiver vazio — a linha da morada, o telefone, os
+testemunhos e a secção de avaliações só aparecem quando tiverem conteúdo.
+
+| O quê | Estado |
+|---|---|
+| Serviços, preços, durações | ✅ do AppBarber e do poster da loja |
+| Equipa e retratos | ✅ |
+| Tabela de preços | ✅ `public/img/tabela-precos.jpg` |
+| Horário | ✅ Seg–Qui 10–19, Sex 9–19, Sáb 9–18 |
+| Morada e código postal | ⚠️ lidos da ficha do Google Maps, por confirmar |
+| Avaliação (5,0 de 237) | ⚠️ idem |
+| Telefone | ⏳ vazio |
+| Ano de abertura | ⏳ e com ele o código do painel |
+| Fotografias do espaço | ⏳ a galeria mostra molduras no lugar |
+| Textos das avaliações | ⏳ a secção de testemunhos não aparece |
 
 ## Páginas
 
 | Rota | O que é |
 |---|---|
-| `/` | Início — a casa, a carta com preços, a equipa, o salão, contactos |
+| `/` | Início — a casa, os packs, a carta com preços, a equipa, o espaço, contactos |
 | `/marcar` | Assistente de marcações em quatro passos |
-| `/painel` | Painel interno com a agenda dos barbeiros (código `1997`) |
+| `/painel` | Painel interno com a agenda dos barbeiros (código `2024`) |
 
 ## O que tem
 
 - **Marcações funcionais**: serviço → barbeiro → dia e hora → dados.
-- **Faixa de acção fixa**, amarela, ao fundo do ecrã: sobe assim que há uma
+- **Faixa de acção fixa**, preta, ao fundo do ecrã: sobe assim que há uma
   escolha, para não ser preciso rolar até ao fim para continuar.
+- **As experiências abertas**: os dois packs mostram os nove e os sete serviços
+  que incluem. No painel de marcações do cliente são duas linhas com um preço.
 - **Marcar a partir de um serviço**: cada linha da carta liga a
   `/marcar?servico=<id>`, que abre já com o serviço escolhido.
 - **Guardar no calendário**: ficheiro `.ics` ou ligação para o Google Agenda.
 - **Painel**: agenda por dia, filtro por barbeiro, resumo de ocupação e receita,
   e estados (agendada / concluída / faltou).
 - **Menu em cartão** no telemóvel, ao centro do ecrã.
+- **Mapa do Google** na secção de contactos, com a ficha da casa. Usa
+  `output=embed`, que não precisa de chave de API.
+- **Molduras no lugar das fotografias que faltam**: mesmas medidas, com a
+  legenda do que ali vai ficar. Quando as fotos chegarem muda-se `lib/dados.ts`
+  e nenhum componente.
 
 ## Arranque
 
@@ -42,7 +68,7 @@ testável sem browser.
 
 | Regra | Comportamento |
 |---|---|
-| Horário | Seg–Sáb 10:00–20:00. Domingo não gera horas. |
+| Horário | Vem de `CASA.horario`. Os dias fechados não geram horas, e as frases sobre o dia de folga também saem daí. |
 | Duração | A marcação tem de caber antes do fecho. Madeixas (165 min) só até às 17:15. |
 | Sobreposição | Um barbeiro não pode ter duas marcações que se cruzem. |
 | Sem preferência | Só oferece a hora se houver alguém livre; atribui ao confirmar. |
@@ -61,14 +87,14 @@ faz, por isso **um barbeiro que abra o painel no telemóvel dele não vê o que 
 cliente marcou noutro dispositivo**. O painel tem um botão para carregar uma
 agenda de exemplo, de modo a poder ser mostrado preenchido.
 
-Pela mesma razão, o código de acesso ao painel (`1997`) está no código-fonte e
+Pela mesma razão, o código de acesso ao painel (`2024`) está no código-fonte e
 não é segurança — separa o painel do site público, nada mais.
 
 ## Testes
 
 ```bash
-npm test           # 58 testes: motor de marcações e contraste da paleta
-npm run test:e2e   # 39 testes × 2 motores (Chromium e WebKit/iPhone)
+npm test           # 69 testes: motor de marcações e contraste da paleta
+npm run test:e2e   # 49 testes × 2 motores (Chromium e WebKit/iPhone)
 ```
 
 O `e2e` cobre o percurso completo de marcação, a ligação directa por serviço, a
@@ -96,34 +122,53 @@ app/
   tema.ts        createTheme: MUI vestido à casa
   design.ts      fontes (next/font) + reexporta a paleta
 components/      Cabecalho, Rodape e as peças de cada página
+  Marca.tsx      o wordmark composto com letra, e a moldura de esquadria
+  Moldura.tsx    uma fotografia, ou o lugar reservado dela
 lib/
   dados.ts       serviços, preços, barbeiros, horário — e os tipos
   marcacoes.ts   motor: disponibilidade, conflitos, estados, ICS
-  cores.ts       paleta, sem dependências (usada também nos testes)
+  cores.ts       paleta e `comAlfa`, sem dependências (usada também nos testes)
   useMarcacoes.ts  ponte para o React, trata da hidratação
-public/img/      fotografias e emblema da casa
+public/img/      retratos, placa da casa e tabela de preços
 testes/
 ```
 
 ## Sobre os dados
 
-Serviços, preços, durações, barbeiros, horário, morada e telefone foram
-recolhidos do perfil público da barbearia no Noona. As fotografias e o emblema
-são da casa. Os textos descritivos foram escritos para a demonstração e ainda
-não estão confirmados com a barbearia.
+Há duas fontes e não coincidem. O painel de marcações da casa
+([AppBarber](https://sites.appbarber.com.br/manspace-j56c)) diz o que é marcável
+e quanto tempo demora; o poster de preços da loja dá os nomes da casa, as
+descrições e o que vai dentro de cada pack. O AppBarber manda no que existe, o
+poster manda no que se lê.
+
+Onde divergem — "Corte Degrade" contra "Corte tradicional", uma prótese contra
+três — está anotado em [`lib/dados.ts`](lib/dados.ts). As fotografias dos
+barbeiros e o poster são da casa. Os papéis de cada barbeiro e os textos
+descritivos foram escritos a partir da carta e ainda não estão confirmados.
 
 ## Desenho
 
-Verde-garrafa `#0d2a1f` de base com amarelo-açafrão `#f2b705` em acento — verde
-e amarelo brasileiros, com o amarelo a pontuar em vez de dominar.
-[Oswald](https://fonts.google.com/specimen/Oswald) condensada nos títulos, à
-maneira dos letreiros de barbearia, e
-[Figtree](https://fonts.google.com/specimen/Figtree) no texto corrido, ambas
-carregadas com `next/font`.
+O sistema não foi inventado: está no poster de preços da loja. Creme `#F4EBDE`
+por baixo, filete fino a separar, **etiqueta preta a anunciar cada bloco** e o
+preço grande a bronze `#6B5028`. O site é a versão web desse impresso.
 
-O tema em `app/tema.ts` desfaz o aspecto Material de origem: botões em pill sem
-elevação, cantos arredondados em todo o lado, e uma escala tipográfica com
-mínimo de 12px. As fotografias ficam com a cor original — só o fundo do hero é
-escurecido por uma cunha em diagonal, o suficiente para o título se ler por
-cima. Todas as combinações de cor são verificadas contra o WCAG em
-`testes/contraste.test.ts`.
+[Cormorant Garamond](https://fonts.google.com/specimen/Cormorant+Garamond) nos
+títulos — a serifa de alto contraste mais próxima do wordmark — e
+[Jost](https://fonts.google.com/specimen/Jost) no texto corrido, que em
+maiúsculas muito espaçadas dá o "MALE CONCEPT" do logo. Ambas com `next/font`.
+
+O wordmark é composto com letra, não servido como imagem: o logo que existe é a
+fotografia de uma placa, que pesa, não escala e traz consigo o bege do estúdio.
+Ver [`components/Marca.tsx`](components/Marca.tsx).
+
+Sobre o papel das cores: numa paleta escura o dourado podia ser ao mesmo tempo
+o ornamento e a cor dos botões. Sobre creme não pode — nenhum dourado que ainda
+pareça dourado chega aos 4.5:1 que o texto exige. Por isso a cor de acção é o
+preto da placa da parede e o bronze fica para preços, numerais e filetes, onde é
+grande o suficiente para se ler. As vinte e duas combinações são medidas contra
+o WCAG em `testes/contraste.test.ts`.
+
+O tema em `app/tema.ts` desfaz o aspecto Material de origem: cantos a dois
+pixéis em vez de catorze, sem elevação, e uma escala tipográfica com mínimo de
+12px — incluindo o "MALE CONCEPT", que no impresso pode ser minúsculo e num ecrã
+não.

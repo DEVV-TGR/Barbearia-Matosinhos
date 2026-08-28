@@ -3,16 +3,16 @@ import BotaoLink from "../BotaoLink";
 import Typography from "@mui/material/Typography";
 import Envolve from "../Envolve";
 import TituloSeccao from "../TituloSeccao";
-import { cores } from "@/app/design";
+import { Esquadria } from "../Marca";
+import { cores, comAlfa } from "@/app/design";
 
 export default function Chamada() {
   return (
     <Box component="section" sx={{ py: { xs: 6, md: 10 } }}>
       <Envolve>
-        <Box sx={{
-          background: `linear-gradient(135deg, ${cores.fundo3}, ${cores.fundo2})`,
-          border: `1px solid ${cores.fundo4}`,
-          borderRadius: "28px",
+        <Esquadria canto={26} sx={{
+          bgcolor: cores.fundo2,
+          border: `1px solid ${comAlfa(cores.acento3, 0.3)}`,
           p: { xs: 3.5, md: 5 },
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
@@ -29,7 +29,7 @@ export default function Chamada() {
           <BotaoLink href="/marcar" variant="contained" size="large" sx={{ flex: "none" }}>
             Marcar agora
           </BotaoLink>
-        </Box>
+        </Esquadria>
       </Envolve>
     </Box>
   );

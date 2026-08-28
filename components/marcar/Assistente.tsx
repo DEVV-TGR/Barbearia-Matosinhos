@@ -21,9 +21,10 @@ import Confirmacao from "./Confirmacao";
 import MinhasMarcacoes from "./MinhasMarcacoes";
 import * as M from "@/lib/marcacoes";
 import { useMarcacoes, useCliente } from "@/lib/useMarcacoes";
+import { CASA } from "@/lib/dados";
 import type { Marcacao } from "@/lib/dados";
-import { euros, duracao } from "@/lib/formatar";
-import { cores } from "@/app/design";
+import { preco, duracao } from "@/lib/formatar";
+import { cores, comAlfa } from "@/app/design";
 import { CURVA, TEMPO } from "@/lib/movimento";
 
 const PASSOS = ["Serviço", "Barbeiro", "Dia e hora", "Os seus dados"];
@@ -122,7 +123,7 @@ export default function Assistente() {
   }
 
   const detalheBarra = [
-    servico ? `${duracao(servico.minutos)} · ${euros(servico.preco)}` : null,
+    servico ? `${duracao(servico.minutos)} · ${preco(servico)}` : null,
     barbeiroId ? M.nomeBarbeiro(barbeiroId) : null,
     data && inicio !== null ? `${M.dataPorExtenso(data)}, ${M.paraHoras(inicio)}` : null
   ].filter(Boolean).join(" · ");
@@ -131,7 +132,7 @@ export default function Assistente() {
     <Box sx={{
       pt: { xs: 12, md: 16 },
       pb: "calc(9rem + env(safe-area-inset-bottom, 0px))",
-      background: `radial-gradient(ellipse at 50% 0%, rgba(242,183,5,0.06), transparent 55%), ${cores.fundo}`,
+      background: `radial-gradient(ellipse at 50% 0%, ${comAlfa(cores.acento3, 0.07)}, transparent 55%), ${cores.fundo}`,
       minHeight: "100svh"
     }}>
       <Envolve>
@@ -143,7 +144,7 @@ export default function Assistente() {
 
         {!feita && (
           <Stepper activeStep={passo} alternativeLabel sx={{
-            mb: 4, p: 1, bgcolor: "background.paper", borderRadius: 999,
+            mb: 4, p: 1, bgcolor: "background.paper", borderRadius: 2,
             "& .MuiStepLabel-label": { fontSize: 13, fontWeight: 600, mt: 0.5 },
             "& .MuiStepLabel-label.Mui-active": { color: "primary.main" }
           }}>
@@ -154,12 +155,12 @@ export default function Assistente() {
         )}
 
         {aviso && (
-          <Alert severity="warning" onClose={() => setAviso(null)} sx={{ mb: 3, borderRadius: "14px" }}>
+          <Alert severity="warning" onClose={() => setAviso(null)} sx={{ mb: 3, borderRadius: 2 }}>
             {aviso}
           </Alert>
         )}
 
-        <Paper sx={{ p: { xs: 2.5, md: 4 }, borderRadius: "22px" }}>
+        <Paper sx={{ p: { xs: 2.5, md: 4 }, borderRadius: 2 }}>
           {!pronto ? (
             <Typography color="text.secondary" sx={{ py: 6, textAlign: "center" }}>
               A carregar a agenda…
@@ -200,15 +201,26 @@ export default function Assistente() {
         <Alert
           severity="info" icon={false}
           sx={{
-            mt: 3, borderRadius: "14px",
-            border: `1px solid ${cores.acento3}`, bgcolor: "rgba(242,183,5,0.06)",
+            mt: 3, borderRadius: 2,
+            border: `1px solid ${comAlfa(cores.acento3, 0.4)}`, bgcolor: comAlfa(cores.acento3, 0.06),
             color: "text.secondary"
           }}
         >
           <strong style={{ color: cores.acento }}>Isto é uma demonstração.</strong>{" "}
-          As marcações ficam guardadas apenas neste navegador e não chegam à
-          barbearia. Para marcar a sério, ligue{" "}
-          <Box component="a" href="tel:+351914230669" sx={{ color: "primary.main" }}>914 230 669</Box>.
+          As marcações ficam guardadas apenas neste navegador e não chegam ao{" "}
+          {CASA.nome}. Para marcar a sério
+          {CASA.telefoneRaw
+            ? <>, ligue{" "}
+                <Box component="a" href={`tel:${CASA.telefoneRaw}`} sx={{ color: cores.acento3 }}>
+                  {CASA.telefone}
+                </Box>.
+              </>
+            : <>, fale connosco no{" "}
+                <Box component="a" href={CASA.instagram} target="_blank" rel="noopener"
+                  sx={{ color: cores.acento3 }}>
+                  Instagram
+                </Box>.
+              </>}
         </Alert>
 
         {pronto && <MinhasMarcacoes key={versao} aoAnular={anular} />}

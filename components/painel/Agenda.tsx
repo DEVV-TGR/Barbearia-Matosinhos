@@ -18,7 +18,7 @@ import ResumoDia from "./ResumoDia";
 import * as M from "@/lib/marcacoes";
 import { useMarcacoes } from "@/lib/useMarcacoes";
 import { BARBEIROS } from "@/lib/dados";
-import { cores, tituloFonte } from "@/app/design";
+import { cores, comAlfa, tituloFonte } from "@/app/design";
 
 function Seta({ children, ...resto }: { children: React.ReactNode } & Record<string, unknown>) {
   return (
@@ -75,7 +75,7 @@ export default function Agenda({ aoSair }: { aoSair: () => void }) {
           value={dia}
           onChange={(e) => e.target.value && setDia(e.target.value)}
           slotProps={{ htmlInput: { "aria-label": "Escolher dia", "data-campo": "dia" } }}
-          sx={{ "& .MuiOutlinedInput-root": { borderRadius: 999 }, width: 175 }}
+          sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 }, width: 175 }}
         />
         <Seta onClick={() => mover(1)} aria-label="Dia seguinte">›</Seta>
         <Button variant="outlined" size="small" onClick={() => setDia(hoje)}>Hoje</Button>
@@ -111,7 +111,7 @@ export default function Agenda({ aoSair }: { aoSair: () => void }) {
       <Box data-testid="agenda" key={versao}>
         {lista.length === 0 ? (
           <Box sx={{
-            border: `1.5px dashed ${cores.fundo4}`, borderRadius: "14px",
+            border: `1.5px dashed ${cores.fundo4}`, borderRadius: 2,
             p: 6, textAlign: "center", color: cores.texto3
           }}>
             <Typography sx={{
@@ -121,7 +121,7 @@ export default function Agenda({ aoSair }: { aoSair: () => void }) {
               {fechado ? "Encerrado" : "Sem marcações"}
             </Typography>
             <Typography variant="body2">
-              {fechado ? "A barbearia não abre ao domingo." : "Não há nada agendado para este dia."}
+              {fechado ? `A barbearia não abre ao ${M.diasDeFecho()}.` : "Não há nada agendado para este dia."}
             </Typography>
           </Box>
         ) : (
@@ -147,8 +147,8 @@ export default function Agenda({ aoSair }: { aoSair: () => void }) {
       <Alert
         severity="info" icon={false}
         sx={{
-          mt: 3, borderRadius: "14px",
-          border: `1px solid ${cores.acento3}`, bgcolor: "rgba(242,183,5,0.06)",
+          mt: 3, borderRadius: 2,
+          border: `1px solid ${comAlfa(cores.acento3, 0.4)}`, bgcolor: comAlfa(cores.acento3, 0.06),
           color: "text.secondary"
         }}
       >

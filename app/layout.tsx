@@ -3,29 +3,34 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import tema from "./tema";
-import { corpoFonte } from "./design";
+import { corpoFonte, cores } from "./design";
 import Cabecalho from "@/components/Cabecalho";
 import Rodape from "@/components/Rodape";
 import TransicaoPagina from "@/components/TransicaoPagina";
 import { CASA } from "@/lib/dados";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://barbearia-garcia.vercel.app"),
-  title: "Barbearia Garcia & Tatuagem — Moreira, Maia · Desde 1997",
+  // POR CONFIRMAR: o domínio final. Daqui saem os URLs absolutos das partilhas.
+  metadataBase: new URL("https://manspace.vercel.app"),
+  title: `${CASA.nomeCompleto} — Barbearia em ${CASA.localidade}`,
   description:
-    "Barbearia clássica em Moreira, Maia, desde 1997. Corte à tesoura, degradés e barba a vapor. Marque a sua vez online.",
+    "Barbearia masculina em Matosinhos. Cortes, barba, tratamentos e prótese capilar. " +
+    "Packs de experiência completa. Marque a sua vez online.",
   openGraph: {
     type: "website",
     locale: "pt_PT",
-    title: "Barbearia Garcia & Tatuagem — Desde 1997",
-    description: `Tradição e qualidade em ${CASA.localidade}. Marcações online.`,
-    images: ["/img/cover-1.jpg"]
+    siteName: CASA.nomeCompleto,
+    title: `${CASA.nomeCompleto} — ${CASA.localidade}`,
+    description: CASA.lema,
+    /* Até haver fotografias do espaço, a tabela de preços é a melhor imagem
+       para partilhar: mostra a marca e o que se paga, de uma vez. */
+    images: ["/img/tabela-precos.jpg"]
   },
   icons: { icon: "/img/logo.jpg" }
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d2a1f",
+  themeColor: cores.fundo,
   viewportFit: "cover"
 };
 
