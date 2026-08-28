@@ -1,12 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import { cores, tituloFonte } from "@/app/design";
+import Marca from "./Marca";
+import { cores, comAlfa, tituloFonte } from "@/app/design";
 import { CURVA, TEMPO } from "@/lib/movimento";
 
-/* Medidas do emblema: o anel é a caixa, o logo vive dentro com folga.
+/* Medidas do emblema: o anel é a caixa, o monograma vive dentro com folga.
    Em viewBox de 100, raio 46 dá uma circunferência de ~289 — daí os traços. */
 const CAIXA = 148;
 const LOGO = 96;
@@ -14,12 +13,15 @@ const PERIMETRO = 2 * Math.PI * 46;
 const ARCO = PERIMETRO * 0.26;
 
 /**
- * Ecrã que cobre o site enquanto a rota seguinte não chega: logo da casa ao
- * centro, anel a girar à volta.
+ * Ecrã que cobre o site enquanto a rota seguinte não chega: o monograma da casa
+ * ao centro, anel a girar à volta.
  *
- * Nunca é desmontado — só desvanece. Desmontar obrigaria a descarregar o logo
- * outra vez a cada navegação, e a primeira volta do anel apanhava o pedido da
- * imagem a meio.
+ * O monograma é letra, não imagem. A placa fotografada que serve de logo é bege
+ * sobre bege: dentro de um anel, e sobre um fundo creme, não se via. Composto em
+ * Cormorant, o M fica nítido em qualquer densidade de ecrã, herda a cor da casa
+ * e não custa um pedido de rede no momento em que a página ainda está a carregar.
+ *
+ * Nunca é desmontado — só desvanece.
  */
 export default function EcraCarregamento({ visivel }: { visivel: boolean }) {
   return (
@@ -53,7 +55,7 @@ export default function EcraCarregamento({ visivel }: { visivel: boolean }) {
         width: "min(70vw, 30rem)",
         aspectRatio: "1",
         borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(242,183,5,0.11) 0%, rgba(242,183,5,0) 68%)",
+        background: `radial-gradient(circle, ${comAlfa(cores.acento3, 0.13)} 0%, ${comAlfa(cores.acento3, 0)} 68%)`,
         animation: `respirar 3.4s ${CURVA.suave} infinite`
       }} />
 
@@ -81,11 +83,11 @@ export default function EcraCarregamento({ visivel }: { visivel: boolean }) {
               transformOrigin: "50% 50%"
             }}
           >
-            <circle cx="50" cy="50" r="46" fill="none" stroke={cores.fundo3} strokeWidth="2.4" />
+            <circle cx="50" cy="50" r="46" fill="none" stroke={cores.fundo3} strokeWidth="1.6" />
             <circle
               cx="50" cy="50" r="46" fill="none"
-              stroke={cores.acento}
-              strokeWidth="2.4"
+              stroke={cores.acento3}
+              strokeWidth="1.6"
               strokeLinecap="round"
               strokeDasharray={`${ARCO} ${PERIMETRO - ARCO}`}
             />
@@ -94,34 +96,23 @@ export default function EcraCarregamento({ visivel }: { visivel: boolean }) {
           <Box sx={{
             width: LOGO,
             height: LOGO,
-            borderRadius: "50%",
-            overflow: "hidden",
-            border: `1px solid ${cores.fundo4}`,
-            boxShadow: "0 18px 44px -20px rgba(0,0,0,0.8)",
+            display: "grid",
+            placeItems: "center",
             animation: `pulsar 2.6s ${CURVA.suave} infinite`
           }}>
-            <Image
-              src="/img/logo.jpg"
-              alt="Barbearia Garcia"
-              width={LOGO * 2}
-              height={LOGO * 2}
-              priority
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            />
+            <Box component="span" aria-hidden sx={{
+              fontFamily: tituloFonte.style.fontFamily,
+              fontSize: "3.6rem", lineHeight: 1, fontWeight: 400,
+              letterSpacing: "-0.04em", color: cores.acento
+            }}>
+              M
+            </Box>
           </Box>
         </Box>
 
-        <Typography
-          component="span"
-          variant="overline"
-          sx={{
-            color: cores.texto3,
-            fontFamily: tituloFonte.style.fontFamily,
-            animation: `emblemaEntra ${TEMPO.longo}ms ${CURVA.entrada} 120ms both`
-          }}
-        >
-          Barbearia Garcia
-        </Typography>
+        <Box sx={{ animation: `emblemaEntra ${TEMPO.longo}ms ${CURVA.entrada} 120ms both` }}>
+          <Marca tamanho="pequeno" monograma={false} />
+        </Box>
       </Box>
     </Box>
   );

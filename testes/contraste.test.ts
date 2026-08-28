@@ -31,7 +31,23 @@ const PARES: [string, string, string, number][] = [
   ["botão hover",                  cores.fundo,  cores.acento2, 4.5],
   ["botão desactivado",            cores.texto2, cores.fundo3, 4.5],
   ["barra de acção: texto",        cores.fundo,  cores.acento, 4.5],
-  ["texto grande sobre cartão",    cores.texto,  cores.fundo3, 3.0]
+  ["texto grande sobre cartão",    cores.texto,  cores.fundo3, 3.0],
+
+  /* O bronze é cor de texto nesta paleta — preços, numerais, versaletes — e não
+     apenas ornamento, por isso é medido como qualquer outra. É ele que fixa o
+     limite: um dourado mais claro seria mais bonito e ilegível. */
+  ["bronze sobre fundo",           cores.acento3, cores.fundo,  4.5],
+  ["bronze sobre superfície",      cores.acento3, cores.fundo2, 4.5],
+  ["bronze sobre cartão",          cores.acento3, cores.fundo3, 4.5],
+  ["botão de bronze",              cores.fundo,   cores.acento3, 4.5],
+
+  /* Os rótulos usam texto3 e vivem nas três superfícies. */
+  ["rótulo sobre fundo",           cores.texto3, cores.fundo,  4.5],
+  ["rótulo sobre superfície",      cores.texto3, cores.fundo2, 4.5],
+  ["rótulo sobre cartão",          cores.texto3, cores.fundo3, 4.5],
+
+  ["erro sobre fundo",             cores.erro,   cores.fundo,  4.5],
+  ["confirmação sobre fundo",      cores.ok,     cores.fundo,  4.5]
 ];
 
 describe("contraste da paleta", () => {

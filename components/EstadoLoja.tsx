@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import { estaAbertoAgora } from "@/lib/marcacoes";
-import { cores } from "@/app/design";
+import { cores, comAlfa } from "@/app/design";
 
 /**
  * Depende da hora actual, que difere entre servidor e cliente — por isso só
@@ -24,7 +24,7 @@ export default function EstadoLoja() {
   return (
     <Box sx={{
       display: "inline-flex", alignItems: "center", gap: 0.8, mt: 2,
-      px: 1.6, py: 0.7, borderRadius: 999, fontSize: 13, fontWeight: 600,
+      px: 1.6, py: 0.7, borderRadius: 2, fontSize: 13, fontWeight: 600,
       letterSpacing: "0.1em", textTransform: "uppercase",
       border: `1px solid ${estado.aberto ? cores.acento3 : cores.fundo4}`,
       color: estado.aberto ? "primary.main" : cores.texto3
@@ -32,11 +32,18 @@ export default function EstadoLoja() {
       <Box sx={{
         width: 8, height: 8, borderRadius: "50%",
         bgcolor: estado.aberto ? cores.ok : cores.texto3,
-        animation: estado.aberto ? "pulsar 2.4s infinite" : "none",
-        "@keyframes pulsar": {
-          "0%":   { boxShadow: "0 0 0 0 rgba(134,217,154,0.7)" },
-          "70%":  { boxShadow: "0 0 0 8px rgba(134,217,154,0)" },
-          "100%": { boxShadow: "0 0 0 0 rgba(134,217,154,0)" }
+        /* O nome tem de ser próprio. Um `@keyframes` declarado dentro de `sx`
+           não fica confinado ao componente: o Emotion escreve-o na folha de
+           estilos global, e este chamava-se `pulsar` — o mesmo nome dos
+           keyframes de escala que o tema declara e que o emblema do ecrã de
+           carregamento usa. O último a ser escrito ganhava, e o emblema
+           aparecia com a auréola verde deste ponto à volta: num quadrado de
+           96px sem cantos redondos, um quadrado verde a piscar no arranque. */
+        animation: estado.aberto ? "pulsarPonto 2.4s infinite" : "none",
+        "@keyframes pulsarPonto": {
+          "0%":   { boxShadow: `0 0 0 0 ${comAlfa(cores.ok, 0.55)}` },
+          "70%":  { boxShadow: `0 0 0 8px ${comAlfa(cores.ok, 0)}` },
+          "100%": { boxShadow: `0 0 0 0 ${comAlfa(cores.ok, 0)}` }
         }
       }} />
       {estado.aberto ? estado.motivo : `Fechado · ${estado.motivo}`}

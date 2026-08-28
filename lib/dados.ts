@@ -1,8 +1,24 @@
-/* Dados reais da Barbearia Garcia & Tatuagem.
-   Extraídos do perfil público em noona.pt/barbeariagarcia.
-   Preços em euros, durações em minutos. */
+/* Dados reais do Man Space | Male Concept, em Matosinhos.
 
-export type Grupo = "Barbearia" | "Tatuagem";
+   Duas fontes, que não coincidem: o painel de marcações em
+   sites.appbarber.com.br/manspace-j56c dá o que é marcável e as durações; o
+   poster de preços da loja dá os nomes da casa, as descrições e o que vai
+   dentro de cada pack. O AppBarber manda no que existe, o poster manda no que
+   se lê.
+
+   Preços em euros, durações em minutos.
+
+   POR CONFIRMAR: morada, telefone, horário, ano de abertura e número de
+   avaliações. Estão todos aqui em baixo, assinalados — o site sabe esconder o
+   que estiver vazio. */
+
+export type Grupo =
+  | "Experiências Man Space"
+  | "Cortes"
+  | "Barba"
+  | "Extras & Cuidados"
+  | "Prótese capilar";
+
 export type EstadoMarcacao = "agendada" | "concluida" | "falta";
 
 export interface Servico {
@@ -11,6 +27,12 @@ export interface Servico {
   grupo: Grupo;
   minutos: number;
   preco: number;
+  /** Quando o preço é um mínimo e não um valor fechado: "desde 45 €". */
+  desde?: boolean;
+  /** A linha do poster, quando existe. Aparece sob o nome na carta. */
+  descricao?: string;
+  /** O que o pack inclui. Só os dois packs a têm. */
+  inclui?: string[];
   destaque?: boolean;
 }
 
@@ -27,6 +49,14 @@ export interface DiaHorario {
   aberto: boolean;
   abre: string | null;
   fecha: string | null;
+}
+
+export interface Foto {
+  /** `null` enquanto a fotografia não existir: sai uma moldura no lugar. */
+  src: string | null;
+  alt: string;
+  /** Largura a dividir por altura. Fixa o lugar antes de a foto lá estar. */
+  ratio: number;
 }
 
 export interface Marcacao {
@@ -47,246 +77,333 @@ export interface Marcacao {
 }
 
 export const CASA = {
-  "nome": "Barbearia Garcia",
-  "nomeCompleto": "Barbearia Garcia & Tatuagem",
-  "desde": 1997,
-  "lema": "Tradição e Qualidade",
-  "morada": "Alameda Padre Alcino Azevedo Barbosa 6",
-  "codigoPostal": "4470-580",
-  "localidade": "Moreira, Maia",
-  "telefone": "+351 914 230 669",
-  "telefoneRaw": "+351914230669",
-  "avaliacoes": 59,
-  "mapa": "https://www.google.com/maps/search/?api=1&query=Alameda+Padre+Alcino+Azevedo+Barbosa+6,+4470-580+Moreira",
-  "horario": [
-    {
-      "dia": "Domingo",
-      "aberto": false,
-      "abre": null,
-      "fecha": null
-    },
-    {
-      "dia": "Segunda",
-      "aberto": true,
-      "abre": "10:00",
-      "fecha": "20:00"
-    },
-    {
-      "dia": "Terça",
-      "aberto": true,
-      "abre": "10:00",
-      "fecha": "20:00"
-    },
-    {
-      "dia": "Quarta",
-      "aberto": true,
-      "abre": "10:00",
-      "fecha": "20:00"
-    },
-    {
-      "dia": "Quinta",
-      "aberto": true,
-      "abre": "10:00",
-      "fecha": "20:00"
-    },
-    {
-      "dia": "Sexta",
-      "aberto": true,
-      "abre": "10:00",
-      "fecha": "20:00"
-    },
-    {
-      "dia": "Sábado",
-      "aberto": true,
-      "abre": "10:00",
-      "fecha": "20:00"
-    }
-  ]
-} as const;
+  nome: "Man Space",
+  nomeCompleto: "Man Space | Male Concept",
+  lema: "Experiências que elevam o seu padrão.",
+  lemaEN: "Experiences that elevate your standard.",
+  /** POR CONFIRMAR — ano de abertura. `null` esconde as frases que o usariam. */
+  desde: null as number | null,
+  /* Lidos da ficha do Google Maps da casa — vale a pena confirmares com eles. */
+  morada: "Av. da República 606",
+  codigoPostal: "4450-242",
+  localidade: "Matosinhos",
+  /** POR CONFIRMAR — vazio esconde o telefone e os botões de chamada. */
+  telefone: "",
+  telefoneRaw: "",
+  instagram: "https://www.instagram.com/manspace.pt/",
+  /* `mapa` é a ligação que abre o Google Maps, `mapaEmbed` é o mesmo sítio
+     dentro do iframe da página. O `output=embed` não precisa de chave de API.
+     A consulta do iframe fica pelo nome de propósito: assim o Maps abre a ficha
+     da casa, com a avaliação e a fotografia, em vez de um alfinete anónimo. */
+  mapa: "https://www.google.com/maps/search/?api=1&query=Man+Space+Male+Concept,+Av.+da+Rep%C3%BAblica+606,+4450-242+Matosinhos",
+  mapaEmbed: "https://www.google.com/maps?q=Man+Space+Male+Concept+Matosinhos&z=15&output=embed",
+  /* Também da ficha do Google. `null` em qualquer um esconde-o. */
+  avaliacoes: 237 as number | null,
+  estrelas: 5 as number | null,
+  /* Sete entradas indexadas por Date.getDay(): 0 é domingo. Não reordenar — o
+     motor de marcações, o rodapé e o "Aberto até às…" leem este array pelo
+     índice do dia. */
+  horario: [
+    { dia: "Domingo", aberto: false, abre: null,    fecha: null },
+    { dia: "Segunda", aberto: true,  abre: "10:00", fecha: "19:00" },
+    { dia: "Terça",   aberto: true,  abre: "10:00", fecha: "19:00" },
+    { dia: "Quarta",  aberto: true,  abre: "10:00", fecha: "19:00" },
+    { dia: "Quinta",  aberto: true,  abre: "10:00", fecha: "19:00" },
+    { dia: "Sexta",   aberto: true,  abre: "09:00", fecha: "19:00" },
+    { dia: "Sábado",  aberto: true,  abre: "09:00", fecha: "18:00" }
+  ] as DiaHorario[]
+};
 
+/* POR CONFIRMAR: os papéis e as bios foram escritos a partir da carta, não ditos
+   pela casa. Os nomes e as fotografias, esses, são os verdadeiros. */
 export const BARBEIROS: Barbeiro[] = [
   {
-    "id": "ary",
-    "nome": "Ary Garcia",
-    "papel": "Mestre barbeiro · Fundador",
-    "foto": "/img/barbeiro-ary-garcia.jpg",
-    "bio": "Abriu as portas em 1997. Corte à tesoura e navalha, da escola antiga."
+    id: "bruno",
+    nome: "Bruno Tissi",
+    papel: "Barbeiro · Prótese capilar",
+    foto: "/img/barbeiro-bruno-tissi.jpg",
+    bio: "Aplicação e adaptação de prótese capilar, feita à medida de cada cabeça."
   },
   {
-    "id": "jonatas",
-    "nome": "Jónatas Garcia",
-    "papel": "Barbeiro · Degradés",
-    "foto": "/img/barbeiro-jonatas-garcia.jpg",
-    "bio": "Especialista em degradés e desenhos. Mão firme, linha limpa."
+    id: "wemysson",
+    nome: "Wemysson Silva",
+    papel: "Barbeiro · Barba e navalha",
+    foto: "/img/barbeiro-wemysson-silva.jpg",
+    bio: "Barbaterapia e método full barba: toalha quente, desenho e acabamento."
   },
   {
-    "id": "miguel",
-    "nome": "Miguel Farias",
-    "papel": "Barbeiro · Barba a vapor",
-    "foto": "/img/barbeiro-miguel-farias.jpg",
-    "bio": "Toalha quente, vapor e navalha. O ritual completo da barba."
+    id: "leonardo",
+    nome: "Leonardo Oliveira",
+    papel: "Barbeiro · Degradés",
+    foto: "/img/barbeiro-leonardo-oliveira.jpg",
+    bio: "Corte shaver e degradé com acabamento à navalha. Linha limpa, mão firme."
+  },
+  {
+    id: "patrick",
+    nome: "Patrick Monteiro",
+    papel: "Barbeiro · Coloração",
+    foto: "/img/barbeiro-patrick-monteiro.jpg",
+    bio: "Madeixas, platinados e pigmentação. Descoloração feita com tempo."
   }
 ];
 
 export const SERVICOS: Servico[] = [
   {
-    "id": "corte-classico-maquina-e-tesoura",
-    "destaque": true,
-    "nome": "Corte Clássico (Máquina e Tesoura)",
-    "grupo": "Barbearia",
-    "minutos": 30,
-    "preco": 13
+    id: "pack-man-space",
+    nome: "Pack Man Space",
+    grupo: "Experiências Man Space",
+    minutos: 60,
+    preco: 50,
+    destaque: true,
+    descricao: "A experiência completa Man Space.",
+    inclui: [
+      "Corte premium com lavagem",
+      "Barbaterapia",
+      "Método full barba",
+      "Hidratação no ozono",
+      "Limpeza de pele / esfoliação",
+      "Sobrancelha",
+      "Toalha quente",
+      "Massagem relaxante",
+      "Finalização premium"
+    ]
   },
   {
-    "id": "corte-classico-c-tesoura",
-    "nome": "Corte Clássico c/ Tesoura",
-    "grupo": "Barbearia",
-    "minutos": 30,
-    "preco": 14
+    id: "pack-premium",
+    nome: "Pack Premium",
+    grupo: "Experiências Man Space",
+    minutos: 60,
+    preco: 30,
+    destaque: true,
+    descricao: "Experiência completa para cabelo e cuidados essenciais.",
+    inclui: [
+      "Corte com lavagem",
+      "Hidratação",
+      "Limpeza de pele / esfoliação",
+      "Sobrancelha",
+      "Massagem relaxante",
+      "Toalha quente",
+      "Finalização premium"
+    ]
+  },
+
+  {
+    id: "corte-tradicional",
+    nome: "Corte tradicional",
+    grupo: "Cortes",
+    minutos: 30,
+    preco: 16,
+    destaque: true,
+    descricao: "Corte clássico com acabamento premium."
   },
   {
-    "id": "corte-so-maquina",
-    "nome": "Corte só Máquina",
-    "grupo": "Barbearia",
-    "minutos": 30,
-    "preco": 11
+    id: "corte-com-lavagem",
+    nome: "Corte com lavagem",
+    grupo: "Cortes",
+    minutos: 30,
+    preco: 18,
+    descricao: "Corte completo com lavagem e finalização."
   },
   {
-    "id": "corte-degrade",
-    "destaque": true,
-    "nome": "Corte Degradé",
-    "grupo": "Barbearia",
-    "minutos": 45,
-    "preco": 15
+    id: "corte-shaver",
+    nome: "Corte shaver",
+    grupo: "Cortes",
+    minutos: 30,
+    preco: 18,
+    descricao: "Degradé com acabamento à navalha."
   },
   {
-    "id": "corte-de-crianca",
-    "nome": "Corte de Criança",
-    "grupo": "Barbearia",
-    "minutos": 30,
-    "preco": 12
+    id: "corte-sobrancelha",
+    nome: "Corte + sobrancelha",
+    grupo: "Cortes",
+    minutos: 30,
+    preco: 18,
+    descricao: "Corte com desenho de sobrancelha incluído."
   },
   {
-    "id": "corte-crianca-degrade",
-    "nome": "Corte Criança Degradé",
-    "grupo": "Barbearia",
-    "minutos": 45,
-    "preco": 13
+    id: "corte-barba",
+    nome: "Corte + barba",
+    grupo: "Cortes",
+    minutos: 45,
+    preco: 25,
+    destaque: true,
+    descricao: "Corte e barba modelada na mesma cadeira."
   },
   {
-    "id": "barba-so-maquina",
-    "nome": "Barba só Máquina",
-    "grupo": "Barbearia",
-    "minutos": 30,
-    "preco": 7
+    id: "cabelo-barba-sobrancelha",
+    nome: "Cabelo + barba + sobrancelha",
+    grupo: "Cortes",
+    minutos: 45,
+    preco: 27,
+    descricao: "As três coisas de uma vez, do princípio ao fim."
   },
   {
-    "id": "barba-a-vapor",
-    "destaque": true,
-    "nome": "Barba a Vapor",
-    "grupo": "Barbearia",
-    "minutos": 30,
-    "preco": 10
+    id: "contorno",
+    nome: "Contorno",
+    grupo: "Cortes",
+    minutos: 15,
+    preco: 5,
+    descricao: "Acerto de linhas entre cortes."
+  },
+
+  {
+    id: "barba-modelada-toalha",
+    nome: "Barba modelada + toalha",
+    grupo: "Barba",
+    minutos: 15,
+    preco: 12,
+    descricao: "Modelada com toalha quente."
   },
   {
-    "id": "corte-classico-maquina-tesoura-barba-vapor",
-    "nome": "Corte Clássico (Máquina + Tesoura) + Barba Vapor",
-    "grupo": "Barbearia",
-    "minutos": 60,
-    "preco": 21
+    id: "barbaterapia",
+    nome: "Barbaterapia",
+    grupo: "Barba",
+    minutos: 15,
+    preco: 17,
+    descricao: "Relaxamento, hidratação e cuidado completo da barba."
   },
   {
-    "id": "corte-degrade-barba-vapor",
-    "destaque": true,
-    "nome": "Corte Degradé + Barba Vapor",
-    "grupo": "Barbearia",
-    "minutos": 60,
-    "preco": 23
+    id: "metodo-full-barba",
+    nome: "Método full barba",
+    grupo: "Barba",
+    minutos: 15,
+    preco: 20,
+    descricao: "Experiência premium completa para barba."
   },
   {
-    "id": "corte-a-tesoura-barba-maquina",
-    "nome": "Corte a Tesoura + Barba Máquina",
-    "grupo": "Barbearia",
-    "minutos": 45,
-    "preco": 20
+    id: "pigmentacao",
+    nome: "Pigmentação",
+    grupo: "Barba",
+    minutos: 15,
+    preco: 10,
+    desde: true,
+    descricao: "Correcção e cobertura de fios."
+  },
+
+  {
+    id: "limpeza-de-pele",
+    nome: "Limpeza de pele / esfoliação",
+    grupo: "Extras & Cuidados",
+    minutos: 15,
+    preco: 10,
+    descricao: "Remoção de impurezas e renovação da pele."
   },
   {
-    "id": "corte-degrade-barba-maquina",
-    "nome": "Corte Degradé + Barba Máquina",
-    "grupo": "Barbearia",
-    "minutos": 60,
-    "preco": 21
+    id: "hidratacao-ozono",
+    nome: "Hidratação no ozono",
+    grupo: "Extras & Cuidados",
+    minutos: 15,
+    preco: 10,
+    descricao: "Tratamento intensivo com tecnologia de ozono."
   },
   {
-    "id": "corte-maquina-barba-vapor",
-    "nome": "Corte Máquina + Barba Vapor",
-    "grupo": "Barbearia",
-    "minutos": 45,
-    "preco": 19
+    id: "hidratacao-tradicional",
+    nome: "Hidratação tradicional",
+    grupo: "Extras & Cuidados",
+    minutos: 15,
+    preco: 5,
+    descricao: "Reposição de hidratação e brilho."
   },
   {
-    "id": "coloracao",
-    "nome": "Coloração",
-    "grupo": "Barbearia",
-    "minutos": 30,
-    "preco": 30
+    id: "lavagem-profunda",
+    nome: "Lavagem profunda",
+    grupo: "Extras & Cuidados",
+    minutos: 15,
+    preco: 5,
+    descricao: "Limpeza profunda do couro cabeludo."
   },
   {
-    "id": "alisamento",
-    "nome": "Alisamento",
-    "grupo": "Barbearia",
-    "minutos": 45,
-    "preco": 30
+    id: "higienizacao-nariz-e-ouvidos",
+    nome: "Higienização nariz e ouvidos",
+    grupo: "Extras & Cuidados",
+    minutos: 15,
+    preco: 8,
+    descricao: "Serviço completo, os dois."
   },
   {
-    "id": "sobrancelhas",
-    "nome": "Sobrancelhas",
-    "grupo": "Barbearia",
-    "minutos": 15,
-    "preco": 4
+    id: "higienizacao-nariz-ou-ouvidos",
+    nome: "Higienização nariz ou ouvidos",
+    grupo: "Extras & Cuidados",
+    minutos: 15,
+    preco: 5,
+    descricao: "Serviço individual, à escolha."
   },
   {
-    "id": "lavagem",
-    "nome": "Lavagem",
-    "grupo": "Barbearia",
-    "minutos": 15,
-    "preco": 6
+    id: "sobrancelha",
+    nome: "Sobrancelha",
+    grupo: "Extras & Cuidados",
+    minutos: 15,
+    preco: 5,
+    descricao: "Desenho e limpeza."
   },
   {
-    "id": "madeixas",
-    "nome": "Madeixas",
-    "grupo": "Barbearia",
-    "minutos": 165,
-    "preco": 30
+    id: "madeixas",
+    nome: "Madeixas",
+    grupo: "Extras & Cuidados",
+    minutos: 90,
+    preco: 45,
+    desde: true,
+    descricao: "Iluminação personalizada."
   },
   {
-    "id": "reuniao-de-orcamento",
-    "nome": "Reunião de Orçamento",
-    "grupo": "Tatuagem",
-    "minutos": 60,
-    "preco": 0
+    id: "platinado",
+    nome: "Platinado",
+    grupo: "Extras & Cuidados",
+    minutos: 90,
+    preco: 50,
+    desde: true,
+    descricao: "Descoloração premium."
+  },
+
+  {
+    id: "protese-capilar",
+    nome: "Prótese capilar",
+    grupo: "Prótese capilar",
+    minutos: 180,
+    preco: 400,
+    desde: true,
+    descricao: "Aplicação e adaptação personalizada."
+  },
+  {
+    id: "protese-capilar-barba",
+    nome: "Prótese + barba",
+    grupo: "Prótese capilar",
+    minutos: 180,
+    preco: 450,
+    desde: true,
+    descricao: "Prótese capilar e barba, modeladas para um visual completo e natural."
+  },
+  {
+    id: "protese-capilar-pack-premium",
+    nome: "Prótese + Pack Premium",
+    grupo: "Prótese capilar",
+    minutos: 180,
+    preco: 480,
+    desde: true,
+    descricao: "Prótese capilar com o Pack Premium, para a experiência completa."
   }
 ];
 
-export const GALERIA = [
-  {
-    "src": "/img/cover-1.jpg",
-    "alt": "Salão da Barbearia Garcia com cadeiras de barbeiro vintage"
-  },
-  {
-    "src": "/img/cover-5.jpg",
-    "alt": "Cadeiras de barbeiro em ferro e pele, ao fundo a bancada de trabalho"
-  },
-  {
-    "src": "/img/cover-3.jpg",
-    "alt": "Corte degradé com barba desenhada, trabalho da casa"
-  },
-  {
-    "src": "/img/cover-2.jpg",
-    "alt": "Pormenor da bancada e dos espelhos do salão"
-  },
-  {
-    "src": "/img/cover-4.jpg",
-    "alt": "Interior da barbearia visto da entrada"
-  }
+/* POR CONFIRMAR: as fotografias do espaço ainda não chegaram. Enquanto `src`
+   for null sai uma moldura com o monograma no lugar, do mesmo tamanho que a
+   fotografia vai ter — assim o desenho da página não muda quando entrarem. */
+export const GALERIA: Foto[] = [
+  { src: null, ratio: 4 / 3, alt: "O salão visto da entrada, com a parede de ripado em madeira" },
+  { src: null, ratio: 3 / 4, alt: "As cadeiras e a bancada de trabalho" },
+  { src: null, ratio: 3 / 4, alt: "Pormenor da placa Man Space na parede" },
+  { src: null, ratio: 1, alt: "Um corte a ser acabado à navalha" },
+  { src: null, ratio: 3 / 4, alt: "A zona de espera" }
 ];
+
+export interface Testemunho {
+  texto: string;
+  autor: string;
+  /** De 1 a 5. Omitido quando a avaliação não trazia estrelas. */
+  estrelas?: number;
+}
+
+/* POR CONFIRMAR — as avaliações reais do Google ou do Instagram.
+   Está vazio de propósito: inventar testemunhos seria pôr na boca de clientes
+   palavras que eles não disseram, e é o género de coisa que passa despercebida
+   até ao dia em que não passa. A secção só aparece quando isto tiver conteúdo. */
+export const TESTEMUNHOS: Testemunho[] = [];

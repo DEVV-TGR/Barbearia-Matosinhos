@@ -34,7 +34,7 @@ export default function ResumoDia({ resumo }: { resumo: Resumo }) {
       display: "grid",
       gridTemplateColumns: { xs: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
       gap: "1px", bgcolor: cores.fundo3,
-      border: `1px solid ${cores.fundo3}`, borderRadius: "14px",
+      border: `1px solid ${cores.fundo3}`, borderRadius: 2,
       overflow: "hidden", m: 0, mb: 3
     }}>
       <Celula rotulo="Marcações" valor={resumo.total} />

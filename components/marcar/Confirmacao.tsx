@@ -51,7 +51,7 @@ export default function Confirmacao({ marcacao, servico, aoRecomecar }: {
         <Button
           variant="contained"
           onClick={() => descarregar(
-            `barbearia-garcia-${marcacao.data}-${M.paraHoras(marcacao.inicio).replace(":", "h")}.ics`,
+            `manspace-${marcacao.data}-${M.paraHoras(marcacao.inicio).replace(":", "h")}.ics`,
             M.paraICS(marcacao, servico)
           )}
           startIcon={

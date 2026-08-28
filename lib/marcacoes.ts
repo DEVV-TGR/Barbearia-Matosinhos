@@ -2,7 +2,10 @@
    Motor de marcações
    --------------------------------------------------------------------------
    Regras da casa, aplicadas literalmente:
-     · Segunda a sábado, 10:00–20:00. Domingo encerrado.
+     · O horário vem de CASA.horario e mais nenhum sítio — nem os dias de
+       fecho estão escritos aqui. A versão anterior anunciava "encerrado ao
+       domingo" em quatro ficheiros; bastava a casa mudar de dia de folga para
+       o site passar a mentir em todos.
      · Uma marcação tem de caber inteira antes da hora de fecho.
      · Um barbeiro não pode ter duas marcações sobrepostas.
      · Antecedência mínima de 30 minutos; máxima de 60 dias.
@@ -16,8 +19,8 @@ import {
   type Barbeiro, type EstadoMarcacao, type Marcacao, type Servico
 } from "./dados";
 
-const CHAVE = "barbearia-garcia:marcacoes:v1";
-const CHAVE_SEED = "barbearia-garcia:seed:v1";
+const CHAVE = "manspace:marcacoes:v1";
+const CHAVE_SEED = "manspace:seed:v1";
 
 export const PASSO_SLOT = 15;       // minutos entre horas propostas
 export const ANTECEDENCIA_MIN = 30; // minutos
@@ -77,9 +80,21 @@ export function expedienteDe(chave: string): Expediente | null {
     : null;
 }
 
+/** Os dias em que a casa não abre, escritos como se dizem: "domingo" ou
+    "domingo e segunda". Serve o copy todo, para não haver dois sítios a
+    afirmar coisas diferentes sobre o mesmo horário. */
+export function diasDeFecho(): string {
+  const fechados = CASA.horario.filter((h) => !h.aberto).map((h) => h.dia.toLowerCase());
+  if (fechados.length === 0) return "";
+  if (fechados.length === 1) return fechados[0];
+  return `${fechados.slice(0, -1).join(", ")} e ${fechados[fechados.length - 1]}`;
+}
+
 export function estaAbertoAgora(agora: Date = new Date()) {
   const h = CASA.horario[agora.getDay()];
-  if (!h.aberto || !h.abre || !h.fecha) return { aberto: false, motivo: "Encerrado ao domingo" };
+  if (!h.aberto || !h.abre || !h.fecha) {
+    return { aberto: false, motivo: `Encerrado ao ${h.dia.toLowerCase()}` };
+  }
   const min = agora.getHours() * 60 + agora.getMinutes();
   const abre = paraMinutos(h.abre), fecha = paraMinutos(h.fecha);
   if (min < abre) return { aberto: false, motivo: `Abre às ${h.abre}` };
@@ -330,11 +345,11 @@ export function paraICS(marcacao: Marcacao, servico: Servico): string {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Barbearia Garcia//Marcacoes//PT",
+    "PRODID:-//Man Space//Marcacoes//PT",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${marcacao.id}@barbearia-garcia`,
+    `UID:${marcacao.id}@manspace`,
     `DTSTAMP:${carimboUTC(new Date())}`,
     `DTSTART:${carimboUTC(inicio)}`,
     `DTEND:${carimboUTC(fim)}`,
@@ -395,7 +410,14 @@ export function semearAgenda(agora: Date = new Date()): void {
   if (todasAsMarcacoes().some((m) => !m.minha)) return;
 
   const rnd = aleatorioSemente(semente);
-  const populares = SERVICOS.filter((s) => s.grupo === "Barbearia" && s.minutos <= 60);
+  /* A agenda de exemplo quer serviços curtos e correntes, não o platinado nem a
+     prótese. Antes filtrava pelo nome do grupo — o que amarrava o motor ao
+     catálogo de um cliente e rebentava assim que o grupo mudasse de nome. O
+     `destaque` diz a mesma coisa sem depender de literais; se não houver
+     nenhum, serve-se do catálogo inteiro. */
+  const curtos = SERVICOS.filter((s) => s.minutos <= 60);
+  const comDestaque = curtos.filter((s) => s.destaque);
+  const populares = comDestaque.length > 0 ? comDestaque : curtos;
   const inventadas: Marcacao[] = [];
 
   for (let i = 0; i < 21; i++) {

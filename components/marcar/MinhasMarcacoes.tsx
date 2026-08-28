@@ -20,7 +20,7 @@ export default function MinhasMarcacoes({ aoAnular }: { aoAnular: (id: string) =
 
       {lista.length === 0 ? (
         <Box sx={{
-          border: `1.5px dashed ${cores.fundo4}`, borderRadius: "14px",
+          border: `1.5px dashed ${cores.fundo4}`, borderRadius: 2,
           p: 3, textAlign: "center", color: cores.texto3
         }}>
           <Typography variant="body2">
@@ -38,7 +38,7 @@ export default function MinhasMarcacoes({ aoAnular }: { aoAnular: (id: string) =
                 key={m.id}
                 data-testid="reserva"
                 sx={{
-                  p: 2, borderRadius: "14px",
+                  p: 2, borderRadius: 2,
                   borderLeft: `4px solid ${passada ? cores.fundo4 : cores.acento}`,
                   opacity: passada ? 0.55 : 1,
                   display: "grid",

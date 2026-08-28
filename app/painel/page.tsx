@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Painel from "@/components/painel/Painel";
+import { CASA } from "@/lib/dados";
 
 export const metadata: Metadata = {
-  title: "Painel — Barbearia Garcia",
-  description: "Painel interno da Barbearia Garcia: agenda do dia, marcações por barbeiro.",
+  title: `Painel — ${CASA.nome}`,
+  description: `Painel interno do ${CASA.nome}: agenda do dia, marcações por barbeiro.`,
   robots: { index: false, follow: false }
 };
 

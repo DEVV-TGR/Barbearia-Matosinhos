@@ -14,7 +14,9 @@ import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import Envolve from "./Envolve";
-import { cores, tituloFonte } from "@/app/design";
+import Marca from "./Marca";
+import { CASA } from "@/lib/dados";
+import { cores, comAlfa } from "@/app/design";
 
 const PAGINAS = [
   { rotulo: "Início", href: "/" },
@@ -23,24 +25,17 @@ const PAGINAS = [
   { rotulo: "Visitar", href: "/#visitar" }
 ];
 
-function Marca() {
+function MarcaLigada() {
   return (
     <Box
       component={Link}
       href="/"
-      sx={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", gap: 0.3 }}
+      aria-label={CASA.nomeCompleto}
+      sx={{ textDecoration: "none", color: "inherit", display: "inline-flex" }}
     >
-      <Typography component="span" sx={{
-        fontFamily: tituloFonte.style.fontFamily, fontWeight: 600, fontSize: "1.3rem",
-        textTransform: "uppercase", lineHeight: 1
-      }}>
-        Barbearia Garcia
-      </Typography>
-      <Typography component="span" variant="caption" sx={{
-        color: "primary.main", fontWeight: 700, letterSpacing: "0.28em", fontSize: 12, lineHeight: 1
-      }}>
-        Desde 1997
-      </Typography>
+      {/* Sem monograma: na barra, o M por cima do nome faria o cabeçalho ter
+          três andares de altura. */}
+      <Marca tamanho="pequeno" monograma={false} />
     </Box>
   );
 }
@@ -82,7 +77,7 @@ export default function Cabecalho() {
       >
         <Envolve>
           <Toolbar disableGutters sx={{ justifyContent: "space-between", gap: 2, minHeight: "auto !important" }}>
-            <Marca />
+            <MarcaLigada />
 
             {largo ? (
               <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
@@ -129,16 +124,16 @@ export default function Cabecalho() {
         onClose={() => setAberto(false)}
         aria-label="Navegação"
         slotProps={{
-          backdrop: { sx: { bgcolor: "rgba(6, 21, 15, 0.72)", backdropFilter: "blur(3px)" } },
+          backdrop: { sx: { bgcolor: comAlfa(cores.acento, 0.62), backdropFilter: "blur(3px)" } },
           paper: {
             sx: {
               bgcolor: "primary.main",
               border: "none",
-              borderRadius: "25px",
+              borderRadius: 2,
               width: "min(88vw, 22rem)",
               m: 0,
               p: 2.2,
-              boxShadow: "0 32px 70px -18px rgba(0,0,0,0.7)"
+              boxShadow: `0 32px 70px -22px ${comAlfa(cores.acento, 0.6)}`
             }
           }
         }}
@@ -154,8 +149,8 @@ export default function Cabecalho() {
               sx={{
                 color: cores.fundo,
                 fontSize: 16, py: 1.4,
-                bgcolor: actual(p.href) ? "rgba(13,42,31,0.14)" : "transparent",
-                "&:hover": { bgcolor: "rgba(13,42,31,0.1)", transform: "none" }
+                bgcolor: actual(p.href) ? comAlfa(cores.fundo, 0.16) : "transparent",
+                "&:hover": { bgcolor: comAlfa(cores.fundo, 0.12), transform: "none" }
               }}
             >
               {p.rotulo}
@@ -168,7 +163,7 @@ export default function Cabecalho() {
             fullWidth
             sx={{
               mt: 1.2, py: 1.6,
-              bgcolor: cores.fundo, color: "primary.main",
+              bgcolor: cores.fundo, color: cores.acento,
               "&:hover": { bgcolor: cores.fundo3, color: cores.acento2, transform: "none" }
             }}
           >

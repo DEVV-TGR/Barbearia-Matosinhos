@@ -2,10 +2,13 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Box from "@mui/material/Box";
 import Assistente from "@/components/marcar/Assistente";
+import { CASA } from "@/lib/dados";
 
 export const metadata: Metadata = {
-  title: "Marcar a minha vez — Barbearia Garcia",
-  description: "Marque o seu corte, degradé ou barba na Barbearia Garcia, em Moreira. Quatro passos, sem chamadas."
+  title: `Marcar a minha vez — ${CASA.nome}`,
+  description:
+    `Marque o seu corte, barba ou pack no ${CASA.nome}, em ${CASA.localidade}. ` +
+    "Quatro passos, sem chamadas."
 };
 
 export default function PaginaMarcar() {

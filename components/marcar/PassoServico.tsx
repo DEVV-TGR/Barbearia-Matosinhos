@@ -9,8 +9,8 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { SERVICOS, type Servico } from "@/lib/dados";
-import { euros, duracao } from "@/lib/formatar";
-import { cores, tituloFonte } from "@/app/design";
+import { preco, duracao } from "@/lib/formatar";
+import { cores, comAlfa, tituloFonte } from "@/app/design";
 
 function Seta() {
   return (
@@ -23,8 +23,8 @@ function Seta() {
 
 const molduraEscolhida = (escolhido: boolean) => ({
   border: `1.5px solid ${escolhido ? cores.acento : cores.fundo3}`,
-  bgcolor: escolhido ? "rgba(242,183,5,0.08)" : "background.default",
-  borderRadius: "14px",
+  bgcolor: escolhido ? comAlfa(cores.acento3, 0.1) : "background.default",
+  borderRadius: 2,
   transition: "border-color 200ms, background 200ms, transform 200ms",
   "&:hover": { borderColor: escolhido ? cores.acento : cores.fundo4, transform: "translateY(-2px)" }
 });
@@ -58,7 +58,7 @@ function Cartao({ s, escolhido, aoEscolher }: {
         fontFamily: tituloFonte.style.fontFamily, fontSize: s.preco ? "1.25rem" : "0.8rem",
         fontWeight: 600, color: s.preco ? "primary.main" : cores.texto3, whiteSpace: "nowrap"
       }}>
-        {euros(s.preco)}
+        {preco(s)}
       </Typography>
     </ButtonBase>
   );
@@ -114,7 +114,7 @@ export default function PassoServico({ escolhido, aoEscolher }: {
                   {s.nome}
                 </Typography>
                 <Typography variant="overline" sx={{ color: cores.texto3 }}>
-                  {duracao(s.minutos)} · {euros(s.preco)}
+                  {duracao(s.minutos)} · {preco(s)}
                 </Typography>
               </ButtonBase>
             ))}

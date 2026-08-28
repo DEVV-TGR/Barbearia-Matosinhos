@@ -4,7 +4,16 @@ import Typography from "@mui/material/Typography";
 import Envolve from "../Envolve";
 import Sobrescrita from "../Sobrescrita";
 import TituloSeccao from "../TituloSeccao";
-import { cores, tituloFonte } from "@/app/design";
+import { CASA } from "@/lib/dados";
+import { cores, comAlfa, tituloFonte } from "@/app/design";
+
+/* Do que a casa faz que uma barbearia de bairro não faz. Sai da carta, não da
+   imaginação: são os três serviços que justificam o "male concept" do nome. */
+const OFICIOS = [
+  { nome: "Barbaterapia", nota: "Relaxamento, hidratação e cuidado completo da barba." },
+  { nome: "Tratamentos", nota: "Limpeza de pele, hidratação no ozono, higienização." },
+  { nome: "Prótese capilar", nota: "Aplicação e adaptação personalizada, feita com tempo." }
+];
 
 export default function Casa() {
   return (
@@ -17,28 +26,40 @@ export default function Casa() {
       }}>
         <Box sx={{ order: { xs: 2, md: 1 } }}>
           <Sobrescrita>A Casa</Sobrescrita>
-          <TituloSeccao destaque="não teve pressa">Onde o tempo</TituloSeccao>
+          <TituloSeccao destaque="só para si">Um espaço</TituloSeccao>
           <Typography color="text.secondary" sx={{ maxWidth: "56ch", mb: 2 }}>
-            Abrimos portas em 1997 e ficámos. A cadeira é de ferro e pele, o
-            espelho é grande e o café está sempre feito. Aqui não se corta cabelo
-            à pressa — corta-se bem.
+            O Man Space é um espaço masculino em {CASA.localidade}: madeira clara,
+            luz quente e uma cadeira reservada de cada vez. Não é uma passagem
+            rápida pela máquina — é tempo marcado em nome de alguém.
           </Typography>
           <Typography color="text.secondary" sx={{ maxWidth: "56ch" }}>
-            Ao corte clássico juntámos o degradé, a barba a vapor e, na sala ao
-            lado, o estúdio de tatuagem. O ofício é o mesmo de sempre: mão firme,
-            atenção ao pormenor e tempo para conversar.
+            À barbearia juntámos o que normalmente se procura noutro sítio. Daí
+            os packs: em vez de somar serviços à conta, faz-se a carta inteira
+            de uma vez, numa hora só.
           </Typography>
 
-          <Box sx={{ mt: 4 }}>
-            <Typography sx={{
-              fontFamily: tituloFonte.style.fontFamily, fontSize: "1.4rem", fontWeight: 500,
-              textTransform: "uppercase", color: "primary.main", lineHeight: 1.1
-            }}>
-              Ary Garcia
-            </Typography>
-            <Typography variant="overline" sx={{ color: cores.texto3, display: "block", mt: 0.5 }}>
-              Mestre barbeiro · Fundador
-            </Typography>
+          <Box component="ul" sx={{ listStyle: "none", m: 0, mt: 4, p: 0 }}>
+            {OFICIOS.map((o) => (
+              <Box
+                component="li"
+                key={o.nome}
+                sx={{
+                  py: 1.6,
+                  borderTop: `1px solid ${comAlfa(cores.acento3, 0.28)}`,
+                  "&:last-of-type": { borderBottom: `1px solid ${comAlfa(cores.acento3, 0.28)}` }
+                }}
+              >
+                <Typography sx={{
+                  fontFamily: tituloFonte.style.fontFamily, fontSize: "1.25rem", fontWeight: 500,
+                  textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1.1
+                }}>
+                  {o.nome}
+                </Typography>
+                <Typography variant="body2" sx={{ color: cores.texto3, mt: 0.4 }}>
+                  {o.nota}
+                </Typography>
+              </Box>
+            ))}
           </Box>
         </Box>
 
@@ -56,41 +77,22 @@ export default function Casa() {
               md: "1rem -0.75rem -1rem 1rem",
               lg: "1.4rem -1.4rem -1.4rem 1.4rem"
             },
-            border: `2px solid ${cores.acento3}`, borderRadius: "14px", zIndex: -1
+            border: `1px solid ${comAlfa(cores.acento3, 0.55)}`, zIndex: -1
           }
         }}>
-          <Box sx={{ position: "relative", aspectRatio: "4 / 5", borderRadius: "14px", overflow: "hidden" }}>
+          {/* Aqui vai a placa da casa, não um lugar reservado: é a única
+              imagem de marca que existe, e uma moldura vazia neste tamanho
+              lia-se como uma imagem que não carregou. As fotografias do espaço
+              têm o seu lugar na galeria, onde a ausência se percebe. */}
+          {/* Quadrada, como a placa: em 4/5 o `cover` cortava-lhe o "E" de SPACE. */}
+          <Box sx={{ position: "relative", aspectRatio: "1", overflow: "hidden" }}>
             <Image
-              src="/img/cover-5.jpg"
-              alt="Cadeiras de barbeiro em ferro e pele no salão da Barbearia Garcia"
+              src="/img/logo.jpg"
+              alt={`Placa do ${CASA.nomeCompleto} à entrada do salão`}
               fill
               sizes="(max-width: 900px) 90vw, 45vw"
               style={{ objectFit: "cover" }}
             />
-          </Box>
-
-          <Box sx={{
-            // O emblema sai da moldura de propósito, mas nunca do ecrã: a
-            // 1024px o deslocamento antigo empurrava a página para fora.
-            position: "absolute",
-            right: { xs: "-0.5rem", md: "-0.75rem", lg: "-2rem" },
-            bottom: { xs: "-1.5rem", md: "-1.5rem", lg: "-2rem" },
-            width: "clamp(6rem, 13vw, 9rem)",
-            aspectRatio: "1",
-            bgcolor: "secondary.main",
-            borderRadius: "50%",
-            p: 1.2,
-            boxShadow: "0 18px 40px -18px rgba(0,0,0,0.75)"
-          }}>
-            <Box sx={{ position: "relative", width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden" }}>
-              <Image
-                src="/img/logo.jpg"
-                alt="Emblema da Barbearia Garcia: Tradição e Qualidade, desde 1997"
-                fill
-                sizes="9rem"
-                style={{ objectFit: "contain" }}
-              />
-            </Box>
           </Box>
         </Box>
       </Envolve>

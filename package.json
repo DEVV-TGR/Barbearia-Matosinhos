@@ -1,8 +1,8 @@
 {
-  "name": "barbearia-garcia",
+  "name": "manspace",
   "version": "2.0.0",
   "private": true,
-  "description": "Site de demonstração da Barbearia Garcia & Tatuagem, com marcações funcionais",
+  "description": "Site de demonstração do Man Space | Male Concept, em Matosinhos, com marcações funcionais",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

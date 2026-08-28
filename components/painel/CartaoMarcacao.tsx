@@ -32,7 +32,7 @@ export default function CartaoMarcacao({ m, aoMudarEstado, aoAnular }: {
       data-testid="marcacao"
       data-estado={m.estado}
       sx={{
-        p: { xs: 1.4, md: 2.2 }, borderRadius: "14px", borderLeft: `4px solid ${cor}`,
+        p: { xs: 1.4, md: 2.2 }, borderRadius: 2, borderLeft: `4px solid ${cor}`,
         opacity: m.estado === "agendada" ? 1 : 0.72,
         display: "grid",
         gridTemplateColumns: { xs: "5.6rem 1fr", md: "6rem 1fr auto" },
@@ -80,7 +80,7 @@ export default function CartaoMarcacao({ m, aoMudarEstado, aoAnular }: {
         )}
         {m.notas && (
           <Typography variant="body2" sx={{
-            mt: 1, p: 1.2, bgcolor: "background.default", borderRadius: "9px",
+            mt: 1, p: 1.2, bgcolor: "background.default", borderRadius: 2,
             borderLeft: `2px solid ${cores.fundo4}`, color: "text.secondary"
           }}>
             {m.notas}
