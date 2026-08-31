@@ -194,6 +194,32 @@ export function diaTemVaga(
   return horasDoDia(chave, servico, barbeiroId, agora).some((s) => s.livre);
 }
 
+/**
+ * O primeiro dia, a contar de hoje, em que ainda se consegue marcar.
+ *
+ * Existe por causa do último dia do mês. O calendário abre no mês da data que
+ * lhe derem, e a data era sempre hoje: no dia 31, depois da hora de fecho, hoje
+ * já não tem vaga e todos os outros dias de Agosto ficam para trás do
+ * `minDate` — o cliente abria o passo do dia e via um mês inteiro apagado, sem
+ * nada que lhe dissesse que a vaga seguinte estava a um clique na seta.
+ *
+ * Devolve `null` quando não há vaga nenhuma no horizonte, e nesse caso quem
+ * chama fica com o comportamento de antes.
+ */
+export function primeiroDiaComVaga(
+  servico: Servico, barbeiroId: string, agora: Date = new Date()
+): string | null {
+  const dia = new Date(agora);
+  dia.setHours(0, 0, 0, 0);
+
+  for (let i = 0; i <= HORIZONTE_DIAS; i++) {
+    const chave = chaveData(dia);
+    if (expedienteDe(chave) && diaTemVaga(chave, servico, barbeiroId, agora)) return chave;
+    dia.setDate(dia.getDate() + 1);
+  }
+  return null;
+}
+
 /* ── Criar e anular ──────────────────────────────────────────────────────── */
 
 export interface PedidoMarcacao {

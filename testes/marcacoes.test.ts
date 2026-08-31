@@ -12,7 +12,7 @@ const servico = (id: string): Servico => {
 };
 
 const corte = servico("corte-tradicional");   // 30 min
-/* O serviço mais longo da carta: é ele que fixa a última hora marcável do dia. */
+/* O serviço mais longo do preçário: é ele que fixa a última hora marcável do dia. */
 const protese = servico("protese-capilar");  // 180 min
 
 /** Uma segunda-feira futura, para não depender do dia em que os testes correm. */
@@ -343,5 +343,43 @@ describe("agenda de exemplo", () => {
       expect(m.inicio).toBeGreaterThanOrEqual(exp!.abre);
       expect(m.inicio + m.minutos).toBeLessThanOrEqual(exp!.fecha);
     }
+  });
+});
+
+/* ── O mês em que o calendário abre ──────────────────────────────────────────
+   No dia 31, depois da hora de fecho, hoje já não tem vaga e todos os outros
+   dias do mês estão para trás: o calendário abria num mês inteiro apagado. É
+   este ajudante que lhe diz em que mês começar. */
+
+describe("primeiro dia com vaga", () => {
+  const barbeiro = BARBEIROS[0].id;
+
+  it("num dia normal, de manhã, é o próprio dia", () => {
+    const manha = M.dataDeChave(KSEG);
+    manha.setHours(10, 0, 0, 0);
+    expect(M.primeiroDiaComVaga(corte, barbeiro, manha)).toBe(KSEG);
+  });
+
+  it("depois da hora de fecho, salta para o dia seguinte que abra", () => {
+    const tarde = M.dataDeChave(KSEG);
+    tarde.setHours(23, 30, 0, 0);
+    const seguinte = M.primeiroDiaComVaga(corte, barbeiro, tarde);
+    expect(seguinte).not.toBe(KSEG);
+    expect(seguinte).not.toBeNull();
+    expect(M.expedienteDe(seguinte!)).not.toBeNull();
+  });
+
+  it("num domingo salta o dia de fecho", () => {
+    const domingo = M.dataDeChave(KDOM);
+    domingo.setHours(9, 0, 0, 0);
+    expect(M.primeiroDiaComVaga(corte, barbeiro, domingo)).not.toBe(KDOM);
+  });
+
+  it("o que devolve tem mesmo vaga", () => {
+    const agora = M.dataDeChave(KSEG);
+    agora.setHours(18, 0, 0, 0);
+    const chave = M.primeiroDiaComVaga(corte, barbeiro, agora);
+    expect(chave).not.toBeNull();
+    expect(M.diaTemVaga(chave!, corte, barbeiro, agora)).toBe(true);
   });
 });

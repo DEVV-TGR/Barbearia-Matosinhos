@@ -24,6 +24,13 @@ export default function PassoDiaHora({
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
   const limite = new Date(hoje); limite.setDate(limite.getDate() + M.HORIZONTE_DIAS);
 
+  /* O mês em que o calendário abre. Sem isto abria sempre no mês de hoje, e no
+     último dia do mês depois da hora de fecho esse mês não tem um único dia
+     seleccionável: ficava tudo apagado, sem nada a indicar que a vaga seguinte
+     estava do outro lado da seta. */
+  const primeiro = M.primeiroDiaComVaga(servico, barbeiroId);
+  const referencia = primeiro ? M.dataDeChave(primeiro) : hoje;
+
   const slots = data ? M.horasDoDia(data, servico, barbeiroId) : [];
   const livres = slots.filter((s) => s.livre);
 
@@ -45,6 +52,7 @@ export default function PassoDiaHora({
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={pt}>
           <DateCalendar
             value={data ? M.dataDeChave(data) : null}
+            referenceDate={referencia}
             onChange={(d) => d && aoEscolherDia(M.chaveData(d))}
             minDate={hoje}
             maxDate={limite}
