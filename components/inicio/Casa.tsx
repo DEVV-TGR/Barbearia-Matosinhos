@@ -7,8 +7,8 @@ import TituloSeccao from "../TituloSeccao";
 import { CASA } from "@/lib/dados";
 import { cores, comAlfa, tituloFonte } from "@/app/design";
 
-/* Do que a casa faz que uma barbearia de bairro não faz. Sai da carta, não da
-   imaginação: são os três serviços que justificam o "male concept" do nome. */
+/* Do que a casa faz que uma barbearia de bairro não faz. Sai do preçário, não
+   da imaginação: são os três serviços que justificam o "male concept" do nome. */
 const OFICIOS = [
   { nome: "Barbaterapia", nota: "Relaxamento, hidratação e cuidado completo da barba." },
   { nome: "Tratamentos", nota: "Limpeza de pele, hidratação no ozono, higienização." },
@@ -17,7 +17,7 @@ const OFICIOS = [
 
 export default function Casa() {
   return (
-    <Box component="section" id="casa" sx={{ py: { xs: 6, md: 12 } }}>
+    <Box component="section" id="casa" sx={{ py: { xs: 5, md: 12 } }}>
       <Envolve sx={{
         display: "grid",
         gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
@@ -34,8 +34,8 @@ export default function Casa() {
           </Typography>
           <Typography color="text.secondary" sx={{ maxWidth: "56ch" }}>
             À barbearia juntámos o que normalmente se procura noutro sítio. Daí
-            os packs: em vez de somar serviços à conta, faz-se a carta inteira
-            de uma vez, numa hora só.
+            os packs: em vez de somar serviços à conta, faz-se tudo de uma
+            vez, numa hora só.
           </Typography>
 
           <Box component="ul" sx={{ listStyle: "none", m: 0, mt: 4, p: 0 }}>
@@ -80,15 +80,21 @@ export default function Casa() {
             border: `1px solid ${comAlfa(cores.acento3, 0.55)}`, zIndex: -1
           }
         }}>
-          {/* Aqui vai a placa da casa, não um lugar reservado: é a única
-              imagem de marca que existe, e uma moldura vazia neste tamanho
-              lia-se como uma imagem que não carregou. As fotografias do espaço
-              têm o seu lugar na galeria, onde a ausência se percebe. */}
-          {/* Quadrada, como a placa: em 4/5 o `cover` cortava-lhe o "E" de SPACE. */}
-          <Box sx={{ position: "relative", aspectRatio: "1", overflow: "hidden" }}>
+          {/* Aqui estava `logo.jpg`, a placa dourada fotografada em estúdio:
+              bege sobre bege, era a imagem mais parada da página, e ao lado de
+              um texto sobre madeira e luz quente não mostrava nem uma coisa
+              nem outra. Continua a ser o ícone e a imagem de partilha.
+
+              PROVISÓRIA — ver o bloco das fotografias em `lib/dados.ts`. */}
+          <Box sx={{
+            position: "relative", aspectRatio: "1", overflow: "hidden",
+            // A fotografia é muito saturada de origem e ao lado do creme da
+            // página lia-se cor-de-laranja. É a mesma gradação da galeria.
+            "& img": { filter: "saturate(0.82) brightness(0.98)" }
+          }}>
             <Image
-              src="/img/logo.jpg"
-              alt={`Placa do ${CASA.nomeCompleto} à entrada do salão`}
+              src="/img/tmp-casa.jpg"
+              alt="Interior de barbearia em luz quente, com cadeiras de barbeiro e a bancada ao fundo"
               fill
               sizes="(max-width: 900px) 90vw, 45vw"
               style={{ objectFit: "cover" }}

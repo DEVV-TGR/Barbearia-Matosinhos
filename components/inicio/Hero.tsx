@@ -1,55 +1,108 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import Image from "next/image";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import BotaoLink from "../BotaoLink";
 import Envolve from "../Envolve";
 import Marca from "../Marca";
-import { BARBEIROS, CASA, SERVICOS } from "@/lib/dados";
+import { CASA } from "@/lib/dados";
 import { cores, comAlfa, tituloFonte } from "@/app/design";
-
-/* Os números não são escritos à mão. A versão anterior anunciava "3 barbeiros"
-   num sítio e listava três noutro, e o dia em que entrasse o quarto ficavam a
-   discordar. Aqui vêm todos do mesmo lado de onde vem o resto do site. */
-function factos() {
-  const precos = SERVICOS.map((s) => s.preco).filter((p) => p > 0);
-  const lista: { r: string; v: string }[] = [
-    { r: "Barbeiros", v: String(BARBEIROS.length) },
-    { r: "Serviços", v: String(SERVICOS.length) },
-    { r: "A partir de", v: `${Math.min(...precos)} €` }
-  ];
-  if (CASA.desde) lista.unshift({ r: "Desde", v: String(CASA.desde) });
-  if (CASA.avaliacoes) lista.push({ r: "Avaliações", v: String(CASA.avaliacoes) });
-  return lista;
-}
+import { movimentoReduzido } from "@/lib/movimento";
 
 export default function Hero() {
-  const FACTOS = factos();
+  const parede = useRef<HTMLDivElement>(null);
+
+  /* A parede desliza a um quarto da velocidade do scroll. É o único sítio do
+     site com parallax, e é o que dá profundidade ao palco sem lhe pôr sombras:
+     o wordmark fica quieto, a madeira atrás dele não. */
+  useEffect(() => {
+    if (movimentoReduzido()) return;
+
+    let pedido = 0;
+    const aoRolar = () => {
+      if (pedido) return;
+      pedido = requestAnimationFrame(() => {
+        pedido = 0;
+        const el = parede.current;
+        // Só enquanto o hero ainda está no ecrã: passado isso, cada frame era
+        // um `transform` a ser calculado para nada.
+        if (el && scrollY < innerHeight) {
+          el.style.transform = `translate3d(0, ${scrollY * 0.25}px, 0)`;
+        }
+      });
+    };
+
+    aoRolar();
+    addEventListener("scroll", aoRolar, { passive: true });
+    return () => { removeEventListener("scroll", aoRolar); cancelAnimationFrame(pedido); };
+  }, []);
 
   return (
     <Box component="section" sx={{
       minHeight: "100svh", display: "grid", alignItems: "center",
-      position: "relative", pt: { xs: 14, md: 16 }, pb: 8, overflow: "hidden",
-      bgcolor: cores.fundo
+      position: "relative", pt: { xs: 14, md: 16 }, pb: { xs: 8, md: 10 },
+      overflow: "hidden", bgcolor: cores.acento
     }}>
-      {/* O ripado de madeira da parede da loja, reduzido a duas linhas de
-          gradiente. Não é uma textura de stock: é a única coisa que há para ver
-          no espaço até as fotografias chegarem, e já estava na marca. */}
+      {/* Uma barbearia, e não uma textura. Desce 25% abaixo da secção para o
+          parallax nunca chegar a descobrir o fundo, e por dentro aproxima-se
+          devagar e sem fim — 26 segundos para 7% de escala, que se nota sem
+          nunca se apanhar a mexer. */}
+      <Box ref={parede} aria-hidden sx={{
+        position: "absolute", top: 0, left: 0, right: 0, bottom: "-25%",
+        zIndex: 0, willChange: "transform"
+      }}>
+        <Box sx={{
+          position: "absolute", inset: 0,
+          animation: "aproximar 26s ease-in-out infinite alternate"
+        }}>
+          <Image
+            src="/img/tmp-salao.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            style={{ objectFit: "cover", objectPosition: "center 62%" }}
+          />
+        </Box>
+      </Box>
+
+      {/* A parede de ripado da casa por cima da fotografia, quase apagada: é o
+          que puxa a cena de volta para esta barbearia e não para a da foto. */}
+      <Box aria-hidden sx={{ position: "absolute", inset: 0, zIndex: 1, opacity: 0.22, mixBlendMode: "overlay" }}>
+        <Image src="/img/parede-ripado.jpg" alt="" fill sizes="100vw" style={{ objectFit: "cover" }} />
+      </Box>
+
+      {/* O véu. A madeira fica a servir de grão e de calor; o que se lê por cima
+          é texto creme sobre preto, com os 15:1 que isso dá. */}
       <Box aria-hidden sx={{
-        position: "absolute", inset: 0, zIndex: 0, opacity: 0.5,
-        backgroundImage: `repeating-linear-gradient(90deg,
-          ${comAlfa(cores.acento3, 0.07)} 0 1px,
-          transparent 1px 14px)`,
-        maskImage: "radial-gradient(120% 90% at 50% 35%, #000 25%, transparent 78%)",
-        WebkitMaskImage: "radial-gradient(120% 90% at 50% 35%, #000 25%, transparent 78%)"
+        position: "absolute", inset: 0, zIndex: 2,
+        background: `linear-gradient(180deg,
+          ${comAlfa(cores.acento, 0.93)} 0%,
+          ${comAlfa(cores.acento, 0.8)} 42%,
+          ${comAlfa(cores.acento, 0.97)} 100%)`
       }} />
 
-      <Envolve sx={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-        <Marca tamanho="grande" />
+      {/* O ripado desenhado por cima do ripado fotografado: a fotografia dá o
+          calor e a irregularidade, esta dá o risco nítido em qualquer ecrã. */}
+      <Box aria-hidden sx={{
+        position: "absolute", inset: 0, zIndex: 3, opacity: 0.45,
+        backgroundImage: `repeating-linear-gradient(90deg,
+          ${comAlfa(cores.ouro, 0.16)} 0 1px,
+          transparent 1px 15px)`,
+        maskImage: "radial-gradient(120% 90% at 50% 35%, #000 20%, transparent 80%)",
+        WebkitMaskImage: "radial-gradient(120% 90% at 50% 35%, #000 20%, transparent 80%)"
+      }} />
+
+      <Envolve sx={{ position: "relative", zIndex: 4, textAlign: "center" }}>
+        <Marca tamanho="grande" cor={cores.fundo} corConceito={cores.ouro} />
 
         <Box sx={{ maxWidth: "34ch", mx: "auto", mt: { xs: 5, md: 6 } }}>
           <Typography component="p" sx={{
             fontFamily: tituloFonte.style.fontFamily,
             fontSize: "clamp(1.35rem, 3.4vw, 2rem)",
-            lineHeight: 1.25, color: cores.texto,
+            lineHeight: 1.25, color: cores.fundo,
             // Sem isto o lema partia com o "o" sozinho no fim da primeira linha
             textWrap: "balance"
           }}>
@@ -58,14 +111,14 @@ export default function Hero() {
           {/* A marca é bilingue no impresso. O site é português, mas o lema é a
               assinatura da casa e perde-se se lhe tirarmos metade. */}
           <Typography component="p" lang="en" sx={{
-            mt: 1.2, fontStyle: "italic", color: cores.texto3,
+            mt: 1.2, fontStyle: "italic", color: cores.ouro,
             fontSize: "clamp(0.85rem, 1.7vw, 1rem)"
           }}>
             {CASA.lemaEN}
           </Typography>
         </Box>
 
-        <Typography variant="overline" component="p" sx={{ color: cores.acento3, mt: 4 }}>
+        <Typography variant="overline" component="p" sx={{ color: cores.fundo3, mt: 4 }}>
           Barbearia em {CASA.localidade}
         </Typography>
 
@@ -84,7 +137,11 @@ export default function Hero() {
             whiteSpace: "nowrap"
           }
         }}>
-          <BotaoLink href="/marcar" variant="contained" size="large">
+          {/* Sobre o preto os papéis trocam-se: o botão cheio é o creme. */}
+          <BotaoLink href="/marcar" variant="contained" size="large" sx={{
+            bgcolor: cores.fundo, color: cores.acento,
+            "&:hover": { bgcolor: cores.fundo3, color: cores.acento }
+          }}>
             {/* "Marcar a minha vez" não cabe numa linha em meio ecrã e fazia o
                 botão crescer para 77px de altura. */}
             <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
@@ -94,34 +151,14 @@ export default function Hero() {
               Marcar vez
             </Box>
           </BotaoLink>
-          <BotaoLink href="#servicos" variant="outlined" size="large">
-            Ver a carta
+          <BotaoLink href="#servicos" variant="outlined" size="large" sx={{
+            borderColor: comAlfa(cores.ouro, 0.65), color: cores.fundo,
+            "&:hover": { borderColor: cores.ouro, bgcolor: comAlfa(cores.ouro, 0.14) }
+          }}>
+            Ver preços
           </BotaoLink>
         </Box>
 
-        {/* Em telemóvel, grelha 2×2: com flex-wrap os factos partiam 3 + 1 e o
-            último ficava sozinho numa linha. */}
-        <Box component="dl" sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr 1fr", sm: `repeat(${FACTOS.length}, auto)` },
-          justifyContent: { sm: "center" },
-          gap: { xs: "1.4rem 1rem", sm: "3rem" },
-          mt: { xs: 6, md: 8 }, pt: 4, mb: 0,
-          borderTop: `1px solid ${comAlfa(cores.acento3, 0.28)}`
-        }}>
-          {FACTOS.map((f) => (
-            <Box key={f.r}>
-              <Typography component="dt" variant="overline" sx={{ color: cores.texto3, display: "block" }}>
-                {f.r}
-              </Typography>
-              <Typography component="dd" variant="h4" sx={{
-                m: 0, color: cores.acento3, fontSize: "1.7rem", letterSpacing: "0.02em"
-              }}>
-                {f.v}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
       </Envolve>
     </Box>
   );

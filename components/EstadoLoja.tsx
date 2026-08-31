@@ -9,7 +9,7 @@ import { cores, comAlfa } from "@/app/design";
  * Depende da hora actual, que difere entre servidor e cliente — por isso só
  * aparece depois de montar, evitando o aviso de hidratação.
  */
-export default function EstadoLoja() {
+export default function EstadoLoja({ escuro = false }: { escuro?: boolean }) {
   const [estado, setEstado] = useState<{ aberto: boolean; motivo: string } | null>(null);
 
   useEffect(() => {
@@ -26,12 +26,16 @@ export default function EstadoLoja() {
       display: "inline-flex", alignItems: "center", gap: 0.8, mt: 2,
       px: 1.6, py: 0.7, borderRadius: 2, fontSize: 13, fontWeight: 600,
       letterSpacing: "0.1em", textTransform: "uppercase",
-      border: `1px solid ${estado.aberto ? cores.acento3 : cores.fundo4}`,
-      color: estado.aberto ? "primary.main" : cores.texto3
+      border: `1px solid ${escuro
+        ? comAlfa(estado.aberto ? cores.ouro : cores.fundo3, 0.5)
+        : (estado.aberto ? cores.acento3 : cores.fundo4)}`,
+      color: escuro
+        ? (estado.aberto ? cores.ouro : cores.fundo3)
+        : (estado.aberto ? "primary.main" : cores.texto3)
     }}>
       <Box sx={{
         width: 8, height: 8, borderRadius: "50%",
-        bgcolor: estado.aberto ? cores.ok : cores.texto3,
+        bgcolor: estado.aberto ? cores.ok : (escuro ? cores.fundo3 : cores.texto3),
         /* O nome tem de ser próprio. Um `@keyframes` declarado dentro de `sx`
            não fica confinado ao componente: o Emotion escreve-o na folha de
            estilos global, e este chamava-se `pulsar` — o mesmo nome dos

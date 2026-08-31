@@ -19,7 +19,10 @@ import { cores, comAlfa, tituloFonte, TEXTO_MINIMO } from "@/app/design";
 const MEDIDAS = {
   pequeno: { monograma: "1.6rem", nome: "1.1rem", conceito: TEXTO_MINIMO, letra: "0.18em", risco: "0.7rem", espaco: 0.7 },
   medio:   { monograma: "2.6rem", nome: "1.7rem", conceito: TEXTO_MINIMO + 1, letra: "0.28em", risco: "1.4rem", espaco: 1 },
-  grande:  { monograma: "5.5rem", nome: "clamp(2.4rem, 9vw, 5.4rem)", conceito: TEXTO_MINIMO + 2, letra: "0.34em", risco: "3rem", espaco: 1.6 }
+  /* No `grande` o M e o nome partilham a linha, por isso o nome tem de caber
+     em menos largura do que quando estava sozinho: a 10vw, "M │ MAN SPACE"
+     dava 400px num ecrã de 393. */
+  grande:  { monograma: "clamp(2.2rem, 8.2vw, 6.2rem)", nome: "clamp(1.9rem, 7.2vw, 5.4rem)", conceito: TEXTO_MINIMO + 2, letra: "0.34em", risco: "3.4rem", espaco: 1.8 }
 } as const;
 
 export default function Marca({
@@ -36,44 +39,74 @@ export default function Marca({
   const m = MEDIDAS[tamanho];
   const conceito = corConceito ?? cores.acento3;
 
+  /* A casa tem dois encaixes do mesmo logo: o dourado de estúdio tem o M
+     empilhado por cima do nome, e a placa preta que está pregada na parede da
+     loja tem-no ao lado, separado por uma barra. Ao tamanho `grande` — o do
+     hero — vale a placa: é o que quem lá entra vê, e empilhado o M lia-se como
+     uma letra pousada em cima do nome em vez de fazer parte dele. */
+  const placa = tamanho === "grande";
+
+  const nome = (
+    <Typography
+      component="span"
+      sx={{
+        fontFamily: tituloFonte.style.fontFamily,
+        fontSize: m.nome,
+        lineHeight: 1,
+        fontWeight: 400,
+        textTransform: "uppercase",
+        /* Sem este espaço não é o mesmo logo. */
+        letterSpacing: "0.2em",
+        /* O tracking acrescenta espaço depois da última letra também, e é
+           isso que descentra um texto centrado. */
+        textIndent: "0.2em"
+      }}
+    >
+      Man Space
+    </Typography>
+  );
+
+  const emeMaiusculo = (
+    <Typography
+      component="span"
+      aria-hidden
+      sx={{
+        fontFamily: tituloFonte.style.fontFamily,
+        fontSize: m.monograma,
+        lineHeight: 0.9,
+        fontWeight: 400,
+        /* O monograma do logo é um M com as hastes quase a tocar-se. O
+           tracking negativo é o único sítio do site onde ele aparece. */
+        letterSpacing: "-0.04em",
+        /* O tracking negativo tira 0.04em depois do M também, e na placa era
+           isso que o encostava à barra enquanto o nome, com o seu tracking
+           positivo, ficava afastado do outro lado. */
+        ...(placa ? { pr: "0.06em" } : { mb: m.espaco * 0.35 })
+      }}
+    >
+      M
+    </Typography>
+  );
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", color: cor }}>
-      {monograma && (
-        <Typography
-          component="span"
-          aria-hidden
-          sx={{
-            fontFamily: tituloFonte.style.fontFamily,
-            fontSize: m.monograma,
-            lineHeight: 0.9,
-            fontWeight: 400,
-            /* O monograma do logo é um M com as hastes quase a tocar-se. O
-               tracking negativo é o único sítio do site onde ele aparece. */
-            letterSpacing: "-0.04em",
-            mb: m.espaco * 0.35
-          }}
-        >
-          M
-        </Typography>
+      {monograma && placa ? (
+        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1.4, md: 2.4 } }}>
+          {emeMaiusculo}
+          {/* A barra da placa. Alta como o M e fina como um filete — é ela que
+              faz o M ler-se como parte da linha e não como uma inicial. */}
+          <Box aria-hidden sx={{
+            width: "1px", alignSelf: "stretch", my: "0.1em",
+            bgcolor: "currentColor", opacity: 0.45
+          }} />
+          {nome}
+        </Box>
+      ) : (
+        <>
+          {monograma && emeMaiusculo}
+          {nome}
+        </>
       )}
-
-      <Typography
-        component="span"
-        sx={{
-          fontFamily: tituloFonte.style.fontFamily,
-          fontSize: m.nome,
-          lineHeight: 1,
-          fontWeight: 400,
-          textTransform: "uppercase",
-          /* Sem este espaço não é o mesmo logo. */
-          letterSpacing: "0.2em",
-          /* O tracking acrescenta espaço depois da última letra também, e é
-             isso que descentra um texto centrado. */
-          textIndent: "0.2em"
-        }}
-      >
-        Man Space
-      </Typography>
 
       <Box sx={{
         display: "flex", alignItems: "center", gap: m.espaco,
@@ -105,9 +138,9 @@ export default function Marca({
  * lá está: a linha não fecha, marca só as pontas.
  */
 export function Esquadria({
-  children, sx, canto = 18
-}: { children: React.ReactNode; sx?: object; canto?: number }) {
-  const traco = `1px solid ${comAlfa(cores.acento3, 0.55)}`;
+  children, sx, canto = 18, cor = cores.acento3
+}: { children: React.ReactNode; sx?: object; canto?: number; cor?: string }) {
+  const traco = `1px solid ${comAlfa(cor, 0.55)}`;
   /* Recuadas para dentro: assentes sobre a borda da caixa, os cantos ficavam
      com duas linhas em cima uma da outra e liam-se como um defeito. */
   const r = 7;

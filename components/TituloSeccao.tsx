@@ -8,10 +8,12 @@ import { cores } from "@/app/design";
  * dos preços no poster, e a única que se destaca do preto sem gritar.
  */
 export default function TituloSeccao({
-  children, destaque, component = "h2", sx
+  children, destaque, corDestaque = cores.acento3, component = "h2", sx
 }: {
   children?: React.ReactNode;
   destaque?: React.ReactNode;
+  /** Nas faixas escuras o bronze não se lê: ali o destaque vai a `ouro`. */
+  corDestaque?: string;
   component?: React.ElementType;
   sx?: object;
 }) {
@@ -19,13 +21,13 @@ export default function TituloSeccao({
     <Typography
       variant="h2"
       component={component}
-      sx={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", mb: 2, ...sx }}
+      sx={{ fontSize: "clamp(2.5rem, 6vw, 4.6rem)", mb: 2, ...sx }}
     >
       {children}
       {destaque != null && (
         <>
           {children ? " " : null}
-          <Box component="span" sx={{ color: cores.acento3 }}>{destaque}</Box>
+          <Box component="span" sx={{ color: corDestaque }}>{destaque}</Box>
         </>
       )}
     </Typography>

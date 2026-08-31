@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
-/* O movimento do site: loader entre páginas, deslize nas âncoras, painéis da
-   carta e secções a revelar-se.
+/* O movimento do site: loader entre páginas, deslize nas âncoras, painéis do
+   preçário e secções a revelar-se.
 
    O que se verifica aqui não é "está animado" — é o que distingue uma animação
    de um corte: haver estados intermédios. Daí as medições a meio da transição,
@@ -58,7 +58,7 @@ test.describe("loader entre páginas", () => {
 
     // O botão do hero, e não o do cabeçalho: em telemóvel esse está escondido
     // dentro do menu. De caminho cobre o `href` relativo, sem caminho nenhum.
-    await page.getByRole("link", { name: "Ver a carta" }).click();
+    await page.getByRole("link", { name: "Ver preços" }).click();
     await page.waitForTimeout(300);
     expect(await visibilidadeDoLoader(page)).toBe("hidden");
 
@@ -123,7 +123,7 @@ test.describe("âncoras", () => {
   });
 });
 
-test.describe("painéis da carta", () => {
+test.describe("painéis do preçário", () => {
   test("fecham por etapas, não de um golpe", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/");
@@ -131,8 +131,8 @@ test.describe("painéis da carta", () => {
     await page.locator("#servicos").scrollIntoViewIfNeeded();
     await page.waitForTimeout(900);
 
-    /* O grupo mais longo da carta, e não o primeiro: este teste mede o fecho de
-       um painel alto, e o primeiro grupo tem só os dois packs. */
+    /* O grupo mais longo do preçário, e não o primeiro: este teste mede o fecho
+       de um painel alto, e o primeiro grupo tem só os dois packs. */
     const grupo = page.locator("#servicos .MuiAccordion-root")
       .filter({ hasText: "Extras & Cuidados" });
     const cabecalho = grupo.locator(".MuiAccordionSummary-root");
@@ -156,17 +156,30 @@ test.describe("painéis da carta", () => {
 
     const aberto = (await painel.boundingBox())!.height; // são nove serviços
 
+    /* Amostrar o fecho em vez de espreitar uma vez a meio.
+       Antes era um `waitForTimeout(180)` seguido de uma leitura: com a suite
+       toda em paralelo, esses 180ms mais a ida e volta da medição caíam já
+       depois dos 375ms que o painel demora a fechar, lia-se zero e o teste
+       falhava sem que nada estivesse mal. O que se quer provar é que houve
+       estados intermédios — então recolhem-se todos os que houver. */
     await grupo.locator(".MuiAccordionSummary-root").click();
-    await page.waitForTimeout(180);
-    const aMeio = (await painel.boundingBox())!.height;
 
-    await page.waitForTimeout(900);
-    expect((await painel.boundingBox())!.height).toBe(0);
+    const alturas: number[] = [];
+    const limite = Date.now() + 1500;
+    while (Date.now() < limite) {
+      const h = (await painel.boundingBox())?.height ?? 0;
+      alturas.push(h);
+      if (h === 0 && alturas.length > 1) break;
+    }
 
-    // A meio do caminho ainda tem de restar boa parte da lista: com a curva de
-    // abertura, um painel deste tamanho já ia em 3 % aqui, e lia-se como estalo.
-    expect(aMeio).toBeGreaterThan(aberto * 0.15);
-    expect(aMeio).toBeLessThan(aberto * 0.85);
+    expect(alturas.at(-1), "o painel não chegou a fechar").toBe(0);
+
+    /* Pelo menos uma leitura tem de o apanhar a meio caminho: com a curva de
+       abertura, um painel deste tamanho já ia em 3 % ao fim de um terço do
+       tempo, e lia-se como um estalo em vez de um fecho. */
+    const aMeio = alturas.filter((h) => h > aberto * 0.15 && h < aberto * 0.85);
+    expect(aMeio.length, `alturas lidas: ${alturas.map(Math.round).join(", ")}`)
+      .toBeGreaterThan(0);
   });
 });
 
@@ -176,8 +189,16 @@ test.describe("secções", () => {
     await page.goto("/");
     await esperarSite(page);
 
-    const seccoes = page.locator("[data-revela]");
-    await expect(seccoes).toHaveCount(7);
+    /* Só as secções, e não tudo o que se revela: dentro da equipa cada retrato
+       tem o seu `Revela` para entrarem em escada, e contá-los aqui era medir
+       outra coisa. Filho directo de `[data-pagina]` é o que distingue uma
+       secção da página de uma peça dentro dela. */
+    const seccoes = page.locator("[data-pagina] > [data-revela]");
+    // Oito desde que as avaliações passaram a ter textos verdadeiros
+    await expect(seccoes).toHaveCount(8);
+
+    // E os retratos da equipa, esses, revelam-se um a um
+    await expect(page.locator("#equipa [data-revela]")).toHaveCount(4);
 
     const equipa = seccoes.nth(3);
     const opacidade = (l: typeof equipa) => l.evaluate((e) => Number(getComputedStyle(e).opacity));
@@ -188,7 +209,7 @@ test.describe("secções", () => {
     expect(await opacidade(equipa)).toBe(1);
     expect(await equipa.evaluate((e) => getComputedStyle(e).transform)).toBe("none");
 
-    const ultima = seccoes.nth(6);
+    const ultima = seccoes.nth(7);
     await ultima.scrollIntoViewIfNeeded();
     await page.waitForTimeout(1200);
     expect(await opacidade(ultima)).toBe(1);

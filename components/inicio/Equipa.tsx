@@ -2,6 +2,7 @@ import Image from "next/image";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Envolve from "../Envolve";
+import Revela from "../Revela";
 import Sobrescrita from "../Sobrescrita";
 import TituloSeccao from "../TituloSeccao";
 import { BARBEIROS } from "@/lib/dados";
@@ -10,7 +11,7 @@ import { cores, comAlfa } from "@/app/design";
 
 export default function Equipa() {
   return (
-    <Box component="section" id="equipa" sx={{ py: { xs: 6, md: 12 } }}>
+    <Box component="section" id="equipa" sx={{ py: { xs: 5, md: 12 } }}>
       <Envolve>
         <Sobrescrita>Quem corta</Sobrescrita>
         {/* O número vem da lista. Escrito à mão, seria a primeira coisa a ficar
@@ -27,8 +28,12 @@ export default function Equipa() {
           gridTemplateColumns: { xs: "repeat(2, 1fr)", md: `repeat(${Math.min(BARBEIROS.length, 4)}, 1fr)` },
           gap: { xs: 1.5, md: 2.5 }, mt: { xs: 3.5, md: 5 }
         }}>
+          {/* Um a um, e não os quatro ao mesmo tempo: com a secção inteira a
+              aparecer de um golpe, quatro retratos iguais lêem-se como uma
+              imagem só. O tecto de três impede que o último fique à espera. */}
           {BARBEIROS.map((b, i) => (
-            <Box component="article" key={b.id} sx={{ "&:hover img": { transform: "scale(1.04)" } }}>
+            <Revela key={b.id} atraso={Math.min(i, 3) * 90} deslocamento={20}>
+            <Box component="article" sx={{ "&:hover img": { transform: "scale(1.04)" } }}>
               <Box sx={{
                 position: "relative", aspectRatio: "3 / 4",
                 overflow: "hidden", bgcolor: cores.fundo3,
@@ -45,9 +50,13 @@ export default function Equipa() {
                   position: "absolute", inset: 0,
                   background: `linear-gradient(180deg, transparent 45%, ${comAlfa(cores.acento, 0.9)})`
                 }} />
+                {/* O gradiente escuro só cobre o fundo do retrato; aqui em
+                    cima o numeral cai sobre madeira clara e sem a sombra
+                    desaparecia dentro dela. */}
                 <Typography sx={{
                   position: "absolute", top: 14, left: 18, zIndex: 2,
-                  color: cores.fundo3, fontWeight: 500, fontSize: 13, letterSpacing: "0.16em"
+                  color: cores.ouro, fontWeight: 500, fontSize: 13, letterSpacing: "0.16em",
+                  textShadow: `0 1px 8px ${comAlfa(cores.acento, 0.85)}`
                 }}>
                   0{i + 1}
                 </Typography>
@@ -69,6 +78,7 @@ export default function Equipa() {
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: { xs: 0.6, md: 1 } }}>{b.bio}</Typography>
             </Box>
+            </Revela>
           ))}
         </Box>
       </Envolve>

@@ -47,11 +47,26 @@ const PARES: [string, string, string, number][] = [
   ["rótulo sobre cartão",          cores.texto3, cores.fundo3, 4.5],
 
   ["erro sobre fundo",             cores.erro,   cores.fundo,  4.5],
-  ["confirmação sobre fundo",      cores.ok,     cores.fundo,  4.5]
+  ["confirmação sobre fundo",      cores.ok,     cores.fundo,  4.5],
+
+  /* As faixas escuras — hero, packs e chamada. Sobre o preto da casa o bronze
+     dá 1.4:1: quem lá escreve escreve a `ouro`, a creme ou a `fundo3`. */
+  ["ouro sobre o escuro",          cores.ouro,   cores.acento,  4.5],
+  ["ouro sobre o escuro em hover", cores.ouro,   cores.acento2, 4.5],
+  ["rótulo sobre o escuro",        cores.fundo3, cores.acento,  4.5],
+  ["placa invertida",              cores.acento, cores.ouro,    4.5]
 ];
 
 describe("contraste da paleta", () => {
   it.each(PARES)("%s tem contraste suficiente", (_nome, fg, bg, minimo) => {
     expect(contraste(fg, bg)).toBeGreaterThanOrEqual(minimo);
+  });
+
+  /* Ao contrário dos outros, este falha se alguém acertar. O `ouro` foi feito
+     para o preto; no dia em que aparecer sobre creme numa secção clara, são
+     2.0:1 e ninguém o lê. Se um dia der 4.5, é porque foi escurecido até ser
+     outra cor — e então é o `acento3` que se quer, não este. */
+  it("o ouro não serve sobre o creme, e é por isso que existe o bronze", () => {
+    expect(contraste(cores.ouro, cores.fundo)).toBeLessThan(4.5);
   });
 });

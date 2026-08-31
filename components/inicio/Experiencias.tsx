@@ -19,20 +19,27 @@ export default function Experiencias() {
   if (PACKS.length === 0) return null;
 
   return (
-    <Box component="section" id="experiencias" sx={{ py: { xs: 6, md: 12 } }}>
+    /* A faixa preta do poster, à largura toda. É aqui que a página passa de
+       impresso a montra: os dois packs são o que a casa quer vender, e sobre
+       preto as cartas creme deixam de ser mais duas caixas numa lista. */
+    <Box component="section" id="experiencias" sx={{
+      py: { xs: 7, md: 13 }, bgcolor: cores.acento, color: cores.fundo
+    }}>
       <Envolve>
-        <Sobrescrita centrado>Experiências Man Space</Sobrescrita>
-        <TituloSeccao destaque="numa hora" sx={{ textAlign: "center" }}>
-          A carta inteira
+        <Sobrescrita centrado escuro>Experiências Man Space</Sobrescrita>
+        <TituloSeccao destaque="numa hora" corDestaque={cores.ouro} sx={{ textAlign: "center" }}>
+          A casa inteira
         </TituloSeccao>
-        <Typography color="text.secondary" sx={{ maxWidth: "52ch", mx: "auto", textAlign: "center" }}>
+        <Typography sx={{ color: cores.fundo3, maxWidth: "52ch", mx: "auto", textAlign: "center" }}>
           Somar serviços à conta sai mais caro e leva mais tempo. Os packs são a
           casa inteira de uma assentada, com hora marcada.
         </Typography>
 
+        {/* Duas colunas iguais diziam que os packs são equivalentes. Não são:
+            o de 50 € tem nove serviços e é o que a casa mostra primeiro. */}
         <Box sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: `repeat(${Math.min(PACKS.length, 2)}, 1fr)` },
+          gridTemplateColumns: { xs: "1fr", md: PACKS.length === 2 ? "1.15fr 0.85fr" : `repeat(${Math.min(PACKS.length, 3)}, 1fr)` },
           gap: { xs: 3, md: 4 },
           mt: { xs: 4, md: 6 },
           alignItems: "start"
@@ -41,18 +48,20 @@ export default function Experiencias() {
             <Esquadria
               key={p.id}
               canto={22}
+              cor={cores.acento3}
               sx={{
-                bgcolor: cores.fundo2,
+                bgcolor: cores.fundo,
                 border: `1px solid ${comAlfa(cores.acento3, 0.32)}`,
                 p: { xs: 3, md: 4 },
-                display: "flex", flexDirection: "column", height: "100%"
+                display: "flex", flexDirection: "column", height: "100%",
+                color: cores.texto
               }}
             >
               {/* O numeral é o que dá ordem sem repetir "pack 1", "pack 2" —
                   e é o que o impresso faz. */}
               <Typography component="span" aria-hidden sx={{
-                fontFamily: tituloFonte.style.fontFamily, color: comAlfa(cores.acento3, 0.55),
-                fontSize: "1.4rem", letterSpacing: "0.2em", lineHeight: 1, mb: 2
+                fontFamily: tituloFonte.style.fontFamily, color: comAlfa(cores.acento3, 0.7),
+                fontSize: "1.6rem", letterSpacing: "0.2em", lineHeight: 1, mb: 2
               }}>
                 {ROMANOS[i] ?? i + 1}
               </Typography>
@@ -65,14 +74,15 @@ export default function Experiencias() {
                   {p.nome}
                 </Typography>
                 <Typography component="span" sx={{
-                  fontFamily: tituloFonte.style.fontFamily, fontSize: "2.4rem",
-                  fontWeight: 500, color: cores.acento3, lineHeight: 1, whiteSpace: "nowrap"
+                  fontFamily: tituloFonte.style.fontFamily, fontSize: "2.6rem",
+                  fontWeight: 500, color: cores.acento3, lineHeight: 1, whiteSpace: "nowrap",
+                  fontVariantNumeric: "tabular-nums"
                 }}>
                   {euros(p.preco)}
                 </Typography>
               </Box>
 
-              <Typography color="text.secondary" sx={{ mt: 1 }}>
+              <Typography sx={{ color: cores.texto2, mt: 1 }}>
                 {p.descricao}
               </Typography>
               <Typography variant="overline" sx={{ color: cores.texto3, mt: 0.5, display: "block" }}>
@@ -90,7 +100,10 @@ export default function Experiencias() {
                     key={item}
                     sx={{
                       display: "flex", alignItems: "baseline", gap: 1.5,
-                      py: 1.1, borderBottom: `1px solid ${comAlfa(cores.acento3, 0.16)}`
+                      // Dezasseis linhas entre os dois packs: a 1.1 davam
+                      // setecentos pixéis só de lista no telemóvel.
+                      py: { xs: 0.85, md: 1.1 },
+                      borderBottom: `1px solid ${comAlfa(cores.acento3, 0.16)}`
                     }}
                   >
                     <Box aria-hidden sx={{

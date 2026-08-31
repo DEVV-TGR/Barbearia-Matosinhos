@@ -75,14 +75,14 @@ export default function PassoServico({ escolhido, aoEscolher }: {
       <Typography variant="h3" sx={{ fontSize: "clamp(1.5rem, 3vw, 2.1rem)", mb: 0.5 }}>
         O que vai ser?
       </Typography>
-      <Typography color="text.secondary" sx={{ mb: 3 }}>Escolha um serviço da carta.</Typography>
+      <Typography color="text.secondary" sx={{ mb: 3 }}>Escolha um serviço.</Typography>
 
       {destaques.length > 0 && (
         <Box sx={{ mb: 3 }}>
           <Typography variant="overline" sx={{ color: "primary.main", display: "block", mb: 1.5 }}>
             Os mais pedidos
           </Typography>
-          {/* Atalhos, não opções à parte: escolhem a mesma entrada da carta */}
+          {/* Atalhos, não opções à parte: escolhem a mesma entrada do preçário */}
           <Box sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },

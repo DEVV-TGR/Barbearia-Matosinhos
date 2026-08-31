@@ -8,9 +8,8 @@
 
    Preços em euros, durações em minutos.
 
-   POR CONFIRMAR: morada, telefone, horário, ano de abertura e número de
-   avaliações. Estão todos aqui em baixo, assinalados — o site sabe esconder o
-   que estiver vazio. */
+   POR CONFIRMAR: morada, telefone, horário e ano de abertura. Estão todos aqui
+   em baixo, assinalados — o site sabe esconder o que estiver vazio. */
 
 export type Grupo =
   | "Experiências Man Space"
@@ -29,7 +28,7 @@ export interface Servico {
   preco: number;
   /** Quando o preço é um mínimo e não um valor fechado: "desde 45 €". */
   desde?: boolean;
-  /** A linha do poster, quando existe. Aparece sob o nome na carta. */
+  /** A linha do poster, quando existe. Aparece sob o nome no preçário. */
   descricao?: string;
   /** O que o pack inclui. Só os dois packs a têm. */
   inclui?: string[];
@@ -97,8 +96,10 @@ export const CASA = {
      da casa, com a avaliação e a fotografia, em vez de um alfinete anónimo. */
   mapa: "https://www.google.com/maps/search/?api=1&query=Man+Space+Male+Concept,+Av.+da+Rep%C3%BAblica+606,+4450-242+Matosinhos",
   mapaEmbed: "https://www.google.com/maps?q=Man+Space+Male+Concept+Matosinhos&z=15&output=embed",
-  /* Também da ficha do Google. `null` em qualquer um esconde-o. */
-  avaliacoes: 237 as number | null,
+  /* Da ficha do Google. `null` em qualquer um esconde-o.
+     261 confirmado pelo cliente em 31/08/2026 — estava em 237, que era do
+     levantamento inicial e já tinha ficado para trás. */
+  avaliacoes: 261 as number | null,
   estrelas: 5 as number | null,
   /* Sete entradas indexadas por Date.getDay(): 0 é domingo. Não reordenar — o
      motor de marcações, o rodapé e o "Aberto até às…" leem este array pelo
@@ -114,8 +115,8 @@ export const CASA = {
   ] as DiaHorario[]
 };
 
-/* POR CONFIRMAR: os papéis e as bios foram escritos a partir da carta, não ditos
-   pela casa. Os nomes e as fotografias, esses, são os verdadeiros. */
+/* POR CONFIRMAR: os papéis e as bios foram escritos a partir do preçário, não
+   ditos pela casa. Os nomes e as fotografias, esses, são os verdadeiros. */
 export const BARBEIROS: Barbeiro[] = [
   {
     id: "bruno",
@@ -384,15 +385,59 @@ export const SERVICOS: Servico[] = [
   }
 ];
 
-/* POR CONFIRMAR: as fotografias do espaço ainda não chegaram. Enquanto `src`
-   for null sai uma moldura com o monograma no lugar, do mesmo tamanho que a
-   fotografia vai ter — assim o desenho da página não muda quando entrarem. */
+/* A placa da casa na parede de ripado. É uma fotografia mesmo daquela parede,
+   recortada da moldura do retrato do Leonardo, acima da cabeça dele — a mesma
+   parede aparece nos quatro retratos da equipa. Abre a secção à largura toda. */
+export const PAREDE: Foto = {
+  src: "/img/placa-parede.jpg",
+  ratio: 1600 / 340,
+  alt: "A placa Man Space | Male Concept na parede de ripado da loja"
+};
+
+/* PROVISÓRIO — o inventário das fotografias que NÃO são da casa.
+   ---------------------------------------------------------------------------
+   Além das quatro da galeria aqui em baixo, há mais quatro espalhadas pelo
+   site. Estão todas em `public/img/` com o prefixo `tmp-`:
+
+     tmp-salao.jpg     o fundo do hero          components/inicio/Hero.tsx
+     tmp-lema.jpg      a faixa do lema          components/Lema.tsx
+     tmp-casa.jpg      a moldura de "A Casa"    components/inicio/Casa.tsx
+     tmp-precario.jpg  a coluna do preçário     components/inicio/Precario.tsx
+     tmp-navalha.jpg   \
+     tmp-tesoura.jpg    |  o mosaico do ofício   components/inicio/Galeria.tsx
+     tmp-barba.jpg      |
+     tmp-bancada.jpg   /
+
+   As que são mesmo da casa e ficam: os quatro retratos da equipa, `logo.jpg`,
+   `tabela-precos.jpg`, e `parede-ripado.jpg` e `placa-parede.jpg`, que são
+   recortes da parede tirados do retrato do Leonardo.
+
+   Um `grep -rn "tmp-" components lib` dá a lista completa de onde tocar.
+   ---------------------------------------------------------------------------
+
+   As quatro seguintes NÃO são da casa.
+   ---------------------------------------------------------------------------
+   São fotografias do Unsplash (licença livre, uso comercial), escolhidas de
+   propósito como pormenores do ofício — mãos, lâmina, tesoura, bancada — e
+   nunca como planos gerais de um salão: um plano geral de outra barbearia
+   debaixo do título desta seria dizer que aquele espaço é este, o que não é
+   verdade. Daí a secção se chamar "O ofício" e não "O espaço".
+
+   Ficheiros marcados com o prefixo `tmp-` em `public/img/`. Quando as
+   fotografias da casa chegarem:
+     1. substituem-se os ficheiros e tira-se-lhes o `tmp-` do nome;
+     2. reescrevem-se os `alt` para o que a foto mostrar de facto;
+     3. apaga-se este comentário e o prefixo deixa de existir no repositório.
+   Enquanto `src` for null sai uma moldura com o monograma no lugar, do mesmo
+   tamanho que a fotografia vai ter.
+
+   A ordem não é indiferente: a única deitada fica em último para o espaço que
+   sobra debaixo dela cair no fim do mosaico, e não a meio. */
 export const GALERIA: Foto[] = [
-  { src: null, ratio: 4 / 3, alt: "O salão visto da entrada, com a parede de ripado em madeira" },
-  { src: null, ratio: 3 / 4, alt: "As cadeiras e a bancada de trabalho" },
-  { src: null, ratio: 3 / 4, alt: "Pormenor da placa Man Space na parede" },
-  { src: null, ratio: 1, alt: "Um corte a ser acabado à navalha" },
-  { src: null, ratio: 3 / 4, alt: "A zona de espera" }
+  { src: "/img/tmp-navalha.jpg", ratio: 1100 / 1648, alt: "Acabamento do contorno à navalha" },
+  { src: "/img/tmp-tesoura.jpg", ratio: 1100 / 1650, alt: "Corte a tesoura e pente" },
+  { src: "/img/tmp-barba.jpg", ratio: 1100 / 1656, alt: "Barba modelada à tesoura" },
+  { src: "/img/tmp-bancada.jpg", ratio: 1100 / 733, alt: "Máquinas, tesoura e pente na bancada" }
 ];
 
 export interface Testemunho {
@@ -402,8 +447,43 @@ export interface Testemunho {
   estrelas?: number;
 }
 
-/* POR CONFIRMAR — as avaliações reais do Google ou do Instagram.
-   Está vazio de propósito: inventar testemunhos seria pôr na boca de clientes
-   palavras que eles não disseram, e é o género de coisa que passa despercebida
-   até ao dia em que não passa. A secção só aparece quando isto tiver conteúdo. */
-export const TESTEMUNHOS: Testemunho[] = [];
+/* Avaliações verdadeiras, copiadas da ficha do Google da casa em 31/08/2026.
+   Nem uma palavra foi mudada: os textos e os nomes são os que as pessoas
+   publicaram, e as gralhas que lá estão são delas. Se um dia alguém pedir para
+   ser retirado, apaga-se a entrada e a secção continua a funcionar.
+
+   Escolhidas de entre umas duzentas, por quatro critérios: estarem completas
+   (as que o Google corta com "…Mais" ficaram de fora), dizerem alguma coisa
+   além de "top", cobrirem os quatro barbeiros da equipa mais o conceito da
+   casa, e serem curtas. A primeira versão levava seis, três delas compridas, e
+   a secção passava a ser o maior bloco da página — 1733px no telemóvel, duas
+   telas só de citações. Uma longa a abrir e quatro curtas a seguir lê-se de uma
+   vez; seis longas ninguém lê.
+ */
+export const TESTEMUNHOS: Testemunho[] = [
+  {
+    texto: "O conceito é verdadeiramente inovador e eleva a fasquia do setor em Matosinhos. O serviço técnico e profissional é acompanhado por um atendimento e ambiente diferenciados. Recomendo vivamente a quem valoriza máxima qualidade e uma experiência premium com uma relação qualidade-preço excecional.",
+    autor: "Pedro Varejão",
+    estrelas: 5
+  },
+  {
+    texto: "Excelente estabelecimento! Fui atendido pelo barbeiro Wemysson Silva e saí muito satisfeito😁👍",
+    autor: "Pedro Coelho",
+    estrelas: 5
+  },
+  {
+    texto: "Não há profissional melhor do que o Bruno\nO atendimento dele é sempre impecável, super atencioso\nRecomendo muito",
+    autor: "Paulinha Ferreira",
+    estrelas: 5
+  },
+  {
+    texto: "Corte e tratamento de cabelo impecável. Aconselho muito, em especial o Leonardo.",
+    autor: "Mário Moura Azevedo",
+    estrelas: 5
+  },
+  {
+    texto: "Grande Patrick, obrigado pelo excelente serviço e experiência!",
+    autor: "Kaio Darze",
+    estrelas: 5
+  }
+];

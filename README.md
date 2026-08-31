@@ -19,17 +19,17 @@ testemunhos e a secção de avaliações só aparecem quando tiverem conteúdo.
 | Tabela de preços | ✅ `public/img/tabela-precos.jpg` |
 | Horário | ✅ Seg–Qui 10–19, Sex 9–19, Sáb 9–18 |
 | Morada e código postal | ⚠️ lidos da ficha do Google Maps, por confirmar |
-| Avaliação (5,0 de 237) | ⚠️ idem |
+| Avaliações (261) | ✅ confirmado pelo cliente |
 | Telefone | ⏳ vazio |
 | Ano de abertura | ⏳ e com ele o código do painel |
-| Fotografias do espaço | ⏳ a galeria mostra molduras no lugar |
-| Textos das avaliações | ⏳ a secção de testemunhos não aparece |
+| Textos das avaliações | ✅ cinco, copiadas do Google sem uma palavra mudada |
+| Fotografias do espaço | ⏳ oito provisórias do Unsplash, com prefixo `tmp-` |
 
 ## Páginas
 
 | Rota | O que é |
 |---|---|
-| `/` | Início — a casa, os packs, a carta com preços, a equipa, o espaço, contactos |
+| `/` | Início — a casa, os packs, o preçário, a equipa, o ofício, contactos |
 | `/marcar` | Assistente de marcações em quatro passos |
 | `/painel` | Painel interno com a agenda dos barbeiros (código `2024`) |
 
@@ -40,17 +40,26 @@ testemunhos e a secção de avaliações só aparecem quando tiverem conteúdo.
   escolha, para não ser preciso rolar até ao fim para continuar.
 - **As experiências abertas**: os dois packs mostram os nove e os sete serviços
   que incluem. No painel de marcações do cliente são duas linhas com um preço.
-- **Marcar a partir de um serviço**: cada linha da carta liga a
+- **Marcar a partir de um serviço**: cada linha do preçário liga a
   `/marcar?servico=<id>`, que abre já com o serviço escolhido.
 - **Guardar no calendário**: ficheiro `.ics` ou ligação para o Google Agenda.
 - **Painel**: agenda por dia, filtro por barbeiro, resumo de ocupação e receita,
   e estados (agendada / concluída / faltou).
-- **Menu em cartão** no telemóvel, ao centro do ecrã.
+- **Menu de ecrã inteiro** no telemóvel: destinos em corpo grande, a entrar um
+  a um, com o horário e a morada ao fundo.
+- **Avaliações verdadeiras** copiadas da ficha do Google, sem uma palavra
+  mudada, em `lib/dados.ts`.
 - **Mapa do Google** na secção de contactos, com a ficha da casa. Usa
   `output=embed`, que não precisa de chave de API.
 - **Molduras no lugar das fotografias que faltam**: mesmas medidas, com a
   legenda do que ali vai ficar. Quando as fotos chegarem muda-se `lib/dados.ts`
   e nenhum componente.
+- **Três faixas pretas** — hero, packs e chamada final — contra o creme das
+  restantes secções. É o preto das placas do poster, à largura toda.
+- **Fotografias provisórias**: oito imagens do Unsplash, todas com o prefixo
+  `tmp-` e inventariadas num só bloco em `lib/dados.ts` — o hero, a faixa do
+  lema, "A Casa", a coluna do preçário e as quatro do ofício. A parede e a
+  placa, essas, são recortes reais dos retratos da equipa.
 
 ## Arranque
 
@@ -93,13 +102,13 @@ não é segurança — separa o painel do site público, nada mais.
 ## Testes
 
 ```bash
-npm test           # 69 testes: motor de marcações e contraste da paleta
-npm run test:e2e   # 49 testes × 2 motores (Chromium e WebKit/iPhone)
+npm test           # 78 testes: motor de marcações e contraste da paleta
+npm run test:e2e   # 48 testes × 2 motores (Chromium e WebKit/iPhone)
 ```
 
 O `e2e` cobre o percurso completo de marcação, a ligação directa por serviço, a
 faixa de acção, os grupos colapsáveis, o `.ics`, o painel com estados e filtros,
-o menu em cartão — e, em **sete resoluções dos 375px aos 2560px**, verifica que
+o menu de ecrã inteiro — e, em **sete resoluções dos 375px aos 2560px**, verifica
 nada transborda e que **nenhum texto desce abaixo de 12px**. Esta última parte
 existe porque a versão anterior tinha rótulos a 8.6px, ilegíveis no telemóvel.
 
@@ -129,7 +138,7 @@ lib/
   marcacoes.ts   motor: disponibilidade, conflitos, estados, ICS
   cores.ts       paleta e `comAlfa`, sem dependências (usada também nos testes)
   useMarcacoes.ts  ponte para o React, trata da hidratação
-public/img/      retratos, placa da casa e tabela de preços
+public/img/      retratos, placa, preçário, recortes da parede e `tmp-*`
 testes/
 ```
 
@@ -144,7 +153,7 @@ poster manda no que se lê.
 Onde divergem — "Corte Degrade" contra "Corte tradicional", uma prótese contra
 três — está anotado em [`lib/dados.ts`](lib/dados.ts). As fotografias dos
 barbeiros e o poster são da casa. Os papéis de cada barbeiro e os textos
-descritivos foram escritos a partir da carta e ainda não estão confirmados.
+descritivos foram escritos a partir do preçário e ainda não estão confirmados.
 
 ## Desenho
 

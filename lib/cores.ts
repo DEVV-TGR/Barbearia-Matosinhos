@@ -19,6 +19,10 @@ export const cores = {
   acento2: "#332A22",
   /** Bronze. Preços, numerais, versaletes e filetes — nunca texto corrido. */
   acento3: "#6B5028",
+  /* O dourado da placa, para as faixas escuras. É a mesma cor do bronze vista
+     com a luz por trás: sobre o preto dá 7.8:1, sobre o creme dá 2.0:1. Só
+     serve num lado, e o teste de contraste guarda os dois sentidos. */
+  ouro: "#C8A55E",
   texto: "#241C14",
   texto2: "#5B4B3C",
   texto3: "#695949",

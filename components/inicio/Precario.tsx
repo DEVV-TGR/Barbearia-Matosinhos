@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -14,7 +15,7 @@ import Sobrescrita from "../Sobrescrita";
 import TituloSeccao from "../TituloSeccao";
 import { SERVICOS, type Servico } from "@/lib/dados";
 import { euros, duracao } from "@/lib/formatar";
-import { cores, tituloFonte } from "@/app/design";
+import { cores, comAlfa, tituloFonte } from "@/app/design";
 import { CURVA, TEMPO, escada, tempoPainel } from "@/lib/movimento";
 
 /** Os grupos não mudam entre renders: calculados uma vez, fora do componente. */
@@ -42,7 +43,9 @@ function Linha({ s, aberto, ordem }: { s: Servico; aberto: boolean; ordem: numbe
     <Typography sx={{
       fontFamily: tituloFonte.style.fontFamily, fontSize: "1.4rem",
       fontWeight: 500, color: cores.acento3,
-      whiteSpace: "nowrap", lineHeight: 1, letterSpacing: "0.01em"
+      whiteSpace: "nowrap", lineHeight: 1, letterSpacing: "0.01em",
+      // Vinte e cinco preços em coluna: sem isto os algarismos não alinham
+      fontVariantNumeric: "tabular-nums"
     }}>
       {s.desde && (
         <Box component="span" sx={{
@@ -135,16 +138,16 @@ function Linha({ s, aberto, ordem }: { s: Servico; aberto: boolean; ordem: numbe
   );
 }
 
-export default function Carta() {
+export default function Precario() {
   /* Controlado, e não `defaultExpanded`, porque as linhas precisam de saber se
      o grupo está aberto para entrarem em escada.
 
-     Abre só o primeiro grupo. A carta anterior tinha dezanove serviços num
-     grupo único e abria inteira, que era como se lia melhor; esta tem vinte e
-     cinco repartidos por cinco famílias, e aberta de uma vez faz 4 424px no
-     telemóvel — cinco ecrãs só de preços, com os nomes dos grupos a passar
-     depressa demais para se verem. Fechada, a carta mostra primeiro do que é
-     que é feita. O estado inicial é calculado do mesmo modo no servidor e no
+     Abre só o primeiro grupo. O preçário anterior tinha dezanove serviços
+     num grupo único e abria inteiro, que era como se lia melhor; este tem
+     vinte e cinco repartidos por cinco famílias, e aberto de uma vez faz
+     4 424px no telemóvel — cinco ecrãs só de preços, com os nomes dos grupos a
+     passar depressa demais para se verem. Fechado, o preçário mostra primeiro
+     do que é que é feito. O estado inicial é calculado do mesmo modo no servidor e no
      cliente, para não haver um salto depois de hidratar. */
   const [fechados, setFechados] = useState<readonly string[]>(() => GRUPOS.slice(1));
 
@@ -154,14 +157,61 @@ export default function Carta() {
     );
 
   return (
-    <Box component="section" id="servicos" sx={{ py: { xs: 6, md: 12 }, bgcolor: "background.paper" }}>
-      <Envolve>
-        <Sobrescrita>A Carta</Sobrescrita>
-        <TituloSeccao destaque="& preços">Serviços</TituloSeccao>
-        <Typography color="text.secondary" sx={{ maxWidth: "56ch", mb: 5 }}>
-          Clique em marcar e vai direito ao passo seguinte, já com o serviço escolhido.
-        </Typography>
+    <Box component="section" id="servicos" sx={{ py: { xs: 5, md: 12 }, bgcolor: "background.paper" }}>
+      {/* Duas colunas em ecrã largo. Este é o bloco mais alto da página e não
+          tinha nada para ver: vinte e cinco linhas de texto a seguir a um
+          título. A coluna da esquerda acompanha a lista enquanto ela rola, e
+          leva a fotografia — assim há sempre alguma coisa no ecrã além de
+          preços. No telemóvel volta a ser uma coluna só, como era. */}
+      <Envolve sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", md: "0.85fr 1.15fr" },
+        gap: { xs: 0, md: 7 },
+        alignItems: "start"
+      }}>
+        <Box sx={{
+          // Um item de grelha tem `min-width: auto`: recusa encolher abaixo do
+          // conteúdo. Com preços e durações em `nowrap` lá dentro, a coluna
+          // exigia 363px e esticava a grelha para fora do ecrã a 375px.
+          minWidth: 0,
+          position: { md: "sticky" },
+          /* 54px de cabeçalho mais folga — a mesma conta do `scrollMarginTop`
+             do tema. A coluna inteira tem de caber num ecrã de portátil, senão
+             o `sticky` prende-a pelo topo e o fundo fica sempre cortado: é por
+             isso que a fotografia é quadrada e não alta. */
+          top: { md: 110 },
+          mb: { xs: 4, md: 0 }
+        }}>
+          <Sobrescrita>O Preçário</Sobrescrita>
+          <TituloSeccao destaque="& preços">Serviços</TituloSeccao>
+          <Typography color="text.secondary" sx={{ maxWidth: "42ch" }}>
+            Clique em marcar e vai direito ao passo seguinte, já com o serviço escolhido.
+          </Typography>
 
+          {/* Só em ecrã largo: no telemóvel era mais um ecrã de scroll antes
+              de chegar ao primeiro preço.
+              PROVISÓRIA — ver o bloco das fotografias em `lib/dados.ts`. */}
+          <Box sx={{
+            display: { xs: "none", md: "block" },
+            /* Deitada, e não quadrada: com os grupos fechados a lista tem uns
+               530px e uma fotografia quadrada punha esta coluna nos 790 — um
+               buraco de 260px no lado direito. Assim as duas acabam à mesma
+               altura, e a coluna continua a caber num ecrã de portátil, que é
+               o que o `sticky` precisa. */
+            position: "relative", aspectRatio: "4 / 3", mt: 4, overflow: "hidden",
+            border: `1px solid ${comAlfa(cores.acento3, 0.25)}`
+          }}>
+            <Image
+              src="/img/tmp-precario.jpg"
+              alt="Cadeiras de barbeiro alinhadas ao longo da bancada, em luz quente"
+              fill
+              sizes="40vw"
+              style={{ objectFit: "cover" }}
+            />
+          </Box>
+        </Box>
+
+        <Box sx={{ minWidth: 0 }}>
         {GRUPOS.map((g) => {
           const doGrupo = SERVICOS.filter((s) => s.grupo === g);
           const aberto = !fechados.includes(g);
@@ -203,6 +253,7 @@ export default function Carta() {
             </Accordion>
           );
         })}
+        </Box>
       </Envolve>
     </Box>
   );

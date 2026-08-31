@@ -117,6 +117,12 @@ const tema = createTheme({
           from: { opacity: 0, transform: "translate3d(0, 10px, 0)" },
           to: { opacity: 1, transform: "none" }
         },
+        /* O hero. Um avanço lento e sem fim sobre a fotografia: o ecrã nunca
+           está parado, mas também nunca se apanha a mexer. */
+        "@keyframes aproximar": {
+          from: { transform: "scale(1)" },
+          to: { transform: "scale(1.07)" }
+        },
 
         /* Quem pede menos movimento leva o site inteiro sem ele — incluindo o
            que o MUI anima por dentro. O loader continua a funcionar; apenas
@@ -190,6 +196,15 @@ const tema = createTheme({
       styleOverrides: {
         root: { backgroundImage: "none", border: `1px solid ${cores.fundo3}` }
       }
+    },
+
+    /* O `AppBar` é um `Paper`, e por isso herdava a borda de cima: um fio creme
+       a contornar a barra inteira. Sobre creme nunca se viu; sobre o hero preto
+       desenhava uma caixa à volta do cabeçalho. A borda fica onde faz falta —
+       cartões do painel, `Paper` de `/marcar`, grupos do preçário — e sai só
+       daqui. */
+    MuiAppBar: {
+      styleOverrides: { root: { border: "none" } }
     },
 
     MuiChip: {
